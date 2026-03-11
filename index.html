@@ -261,6 +261,7 @@
 
 <script>
 function app(){
+// Alpine root component
 return{
     mode:null,
 
@@ -330,7 +331,7 @@ return{
         round:1,
         // Aktuelle Runde
         scores:{m1a:0,m1b:0,m2a:0,m2b:0},
-        // NFV-Tendenz über ALLE Runden aufsummiert
+        // NFV‑Tendenz über ALLE Runden aufsummiert
         tendenzTotal:{team1:0, team2:0}
     }
     },
@@ -348,14 +349,14 @@ return{
         const m2_t1 = this.twin.scores.m2a > this.twin.scores.m2b ? 1 : (this.twin.scores.m2a < this.twin.scores.m2b ? 0 : 1)
         const m2_t2 = this.twin.scores.m2b > this.twin.scores.m2a ? 1 : (this.twin.scores.m2b < this.twin.scores.m2a ? 0 : 1)
 
-        // --- Zur Gesamt-Tendenz addieren (NFV Twin) ---
+        // --- Zur Gesamt‑Tendenz addieren (NFV Twin) ---
         this.twin.tendenzTotal.team1 += (m1_t1 + m2_t1)
         this.twin.tendenzTotal.team2 += (m1_t2 + m2_t2)
 
         // Runde wechseln
         this.twin.round = this.twin.round===1 ? 2 : 1
 
-        // Spielfeld-Scores zurücksetzen
+        // Spielfeld‑Scores zurücksetzen
         this.twin.scores = {m1a:0,m1b:0,m2a:0,m2b:0}
     }
     },
@@ -390,7 +391,7 @@ return{
 
     // NFV Twin: Team 1A + Team 1B = Team 1 Gesamt
     //           Team 2A + Team 2B = Team 2 Gesamt
-    // Gesamt-Tendenz über alle gespielten Runden
+    // Gesamt‑Tendenz über alle gespielten Runden
     get team1Tendenz(){ return this.twin.tendenzTotal.team1 },
     get team2Tendenz(){ return this.twin.tendenzTotal.team2 },
 
