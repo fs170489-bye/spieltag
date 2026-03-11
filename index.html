@@ -70,23 +70,27 @@
             </div>
 
             <template x-if="single.teamA.name && single.teamB.name">
-                <div class="grid md:grid-cols-2 gap-10">
+                <div class="singleScoreboard">
 
-                    <div class="teamCard bg-blue-600">
-                        <h3 x-text="single.teamA.name"></h3>
-                        <div class="score" x-text="single.teamA.score"></div>
-                        <div class="goalRow">
-                            <button @click="decrement(single.teamA)" class="goalBtnMinus">−</button>
-                            <button @click="single.teamA.score++" class="goalBtnPlus">+ Tor</button>
+                    <div class="singleTeam bg-blue-600">
+                        <div class="singleName" x-text="single.teamA.name"></div>
+                        <div class="singleScore" x-text="single.teamA.score"></div>
+                        <div class="singleBtns">
+                            <button @click="decrement(single.teamA)" class="minusBtn">−</button>
+                            <button @click="single.teamA.score++" class="plusBtn">TOR</button>
                         </div>
                     </div>
 
-                    <div class="teamCard bg-green-600">
-                        <h3 x-text="single.teamB.name"></h3>
-                        <div class="score" x-text="single.teamB.score"></div>
-                        <div class="goalRow">
-                            <button @click="decrement(single.teamB)" class="goalBtnMinus">−</button>
-                            <button @click="single.teamB.score++" class="goalBtnPlus">+ Tor</button>
+                    <div class="singleCenter">
+                        <div>VS</div>
+                    </div>
+
+                    <div class="singleTeam bg-green-600">
+                        <div class="singleName" x-text="single.teamB.name"></div>
+                        <div class="singleScore" x-text="single.teamB.score"></div>
+                        <div class="singleBtns">
+                            <button @click="decrement(single.teamB)" class="minusBtn">−</button>
+                            <button @click="single.teamB.score++" class="plusBtn">TOR</button>
                         </div>
                     </div>
 
@@ -225,6 +229,15 @@
 .goalBtnPlus { @apply px-10 py-4 bg-white text-black text-xl font-bold rounded-xl shadow hover:bg-gray-100 }
 .goalBtnMinus { @apply px-6 py-4 bg-black/20 text-white text-2xl font-bold rounded-xl shadow hover:bg-black/30 }
 
+.singleScoreboard{ @apply grid md:grid-cols-[1fr_auto_1fr] gap-8 items-center }
+.singleTeam{ @apply text-white rounded-3xl p-10 shadow-2xl text-center }
+.singleName{ @apply text-2xl md:text-3xl font-bold mb-6 }
+.singleScore{ @apply text-8xl font-black mb-8 }
+.singleBtns{ @apply flex justify-center gap-6 }
+.plusBtn{ @apply px-10 py-4 bg-white text-black text-xl font-bold rounded-xl shadow hover:bg-gray-100 }
+.minusBtn{ @apply px-6 py-4 bg-black/20 text-white text-2xl font-bold rounded-xl shadow hover:bg-black/30 }
+.singleCenter{ @apply text-4xl font-black text-slate-400 text-center }
+
 .roundBar { @apply flex items-center justify-between bg-indigo-50 border border-indigo-200 px-6 py-4 rounded-2xl }
 .roundInfo { @apply flex items-end gap-4 }
 .nextBtn { @apply px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold shadow hover:bg-indigo-700 }
@@ -315,7 +328,11 @@ return{
     twin:{
         team1:'', team2:'',
         round:1,
-        scores:{m1a:0,m1b:0,m2a:0,m2b:0}
+        // Aktuelle Runde
+        scores:{m1a:0,m1b:0,m2a:0,m2b:0},
+        // NFV-Tendenz über ALLE Runden aufsummiert
+        tendenzTotal:{team1:0, team2:0}
+    }
     },
 
     get match1A(){ return this.twin.team1 + ' A' },
@@ -324,8 +341,23 @@ return{
     get match2B(){ return this.twin.round===1 ? this.twin.team2+' B' : this.twin.team2+' A' },
 
     nextRound(){
+        // --- Aktuelle Runde in Tendenz umrechnen ---
+        const m1_t1 = this.twin.scores.m1a > this.twin.scores.m1b ? 1 : (this.twin.scores.m1a < this.twin.scores.m1b ? 0 : 1)
+        const m1_t2 = this.twin.scores.m1b > this.twin.scores.m1a ? 1 : (this.twin.scores.m1b < this.twin.scores.m1a ? 0 : 1)
+
+        const m2_t1 = this.twin.scores.m2a > this.twin.scores.m2b ? 1 : (this.twin.scores.m2a < this.twin.scores.m2b ? 0 : 1)
+        const m2_t2 = this.twin.scores.m2b > this.twin.scores.m2a ? 1 : (this.twin.scores.m2b < this.twin.scores.m2a ? 0 : 1)
+
+        // --- Zur Gesamt-Tendenz addieren (NFV Twin) ---
+        this.twin.tendenzTotal.team1 += (m1_t1 + m2_t1)
+        this.twin.tendenzTotal.team2 += (m1_t2 + m2_t2)
+
+        // Runde wechseln
         this.twin.round = this.twin.round===1 ? 2 : 1
-        this.twin.scores={m1a:0,m1b:0,m2a:0,m2b:0}
+
+        // Spielfeld-Scores zurücksetzen
+        this.twin.scores = {m1a:0,m1b:0,m2a:0,m2b:0}
+    }
     },
 
     // ---------- DASHBOARD CALC (NFV Twin Tendenzwertung) ----------
@@ -358,8 +390,9 @@ return{
 
     // NFV Twin: Team 1A + Team 1B = Team 1 Gesamt
     //           Team 2A + Team 2B = Team 2 Gesamt
-    get team1Tendenz(){ return this.m1_t1 + this.m2_t1 },
-    get team2Tendenz(){ return this.m1_t2 + this.m2_t2 },
+    // Gesamt-Tendenz über alle gespielten Runden
+    get team1Tendenz(){ return this.twin.tendenzTotal.team1 },
+    get team2Tendenz(){ return this.twin.tendenzTotal.team2 },
 
     // Anzeige (wer führt)
     get tendenzText(){
