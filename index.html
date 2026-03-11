@@ -10,14 +10,14 @@
 
 <body class="bg-gradient-to-br from-slate-100 to-indigo-100 min-h-screen p-4 md:p-8 font-sans">
 
-<div x-data="app()" x-init="init()" class="max-w-7xl mx-auto">
+<div x-data="app()" x-init="init()" class="max-w-7xl mx-auto space-y-8">
 
     <!-- HEADER / TIMER BAR -->
-    <div class="bg-slate-900 text-white rounded-3xl p-6 md:p-8 mb-8 shadow-2xl">
-        <div class="flex flex-col xl:flex-row items-center justify-between gap-8">
+    <div class="bg-slate-900 text-white rounded-3xl p-6 md:p-8 shadow-2xl">
+        <div class="flex flex-col 2xl:flex-row items-center justify-between gap-8">
 
-            <div class="text-center xl:text-left">
-                <div class="text-sm opacity-70 tracking-wider">SPIELZEIT</div>
+            <div class="text-center 2xl:text-left">
+                <div class="text-xs tracking-[0.2em] opacity-60">SPIELZEIT</div>
                 <div class="text-6xl md:text-7xl font-mono font-black" x-text="timerDisplay"></div>
             </div>
 
@@ -30,10 +30,10 @@
             </div>
 
             <div class="flex flex-wrap gap-2 justify-center">
-                <template x-for="m in [10,15,20,25,30]">
+                <template x-for="m in [10,15,20,25,30]" :key="m">
                     <button @click="setMinutes(m)"
                         class="timeBtn"
-                        :class="m===25 ? 'bg-indigo-500 text-white ring-4 ring-indigo-300' : 'bg-white text-black'">
+                        :class="timeLeft===m*60 ? 'bg-indigo-500 text-white ring-4 ring-indigo-300' : 'bg-white text-black'">
                         <span x-text="m + ' Min'"></span>
                     </button>
                 </template>
@@ -43,14 +43,14 @@
 
     <!-- MODE SELECT -->
     <template x-if="mode === null">
-        <div class="text-center py-10">
+        <div class="text-center py-16">
             <h1 class="text-4xl md:text-5xl font-bold mb-14">Spielmodus wählen</h1>
             <div class="grid md:grid-cols-2 gap-10 max-w-4xl mx-auto">
-                <button @click="mode='single'" class="modeCard bg-blue-600 hover:bg-blue-700">
+                <button @click="setMode('single')" class="modeCard bg-blue-600 hover:bg-blue-700">
                     <div class="text-6xl mb-4">⚽</div>
                     <div>Single-Spiel</div>
                 </button>
-                <button @click="mode='twin'" class="modeCard bg-indigo-600 hover:bg-indigo-700">
+                <button @click="setMode('twin')" class="modeCard bg-indigo-600 hover:bg-indigo-700">
                     <div class="text-6xl mb-4">👥</div>
                     <div>Twin-Modus</div>
                 </button>
@@ -60,8 +60,11 @@
 
     <!-- SINGLE MODE -->
     <template x-if="mode==='single'">
-        <div>
-            <h2 class="sectionTitle">Single-Spiel</h2>
+        <div class="viewCard">
+            <div class="viewHeader">
+                <h2>Single-Spiel</h2>
+                <button @click="backToMenu" class="backBtn">Modus wechseln</button>
+            </div>
 
             <div class="grid md:grid-cols-2 gap-6 mb-12">
                 <input x-model="single.teamA.name" placeholder="Team A" class="input">
@@ -71,7 +74,6 @@
             <template x-if="single.teamA.name && single.teamB.name">
                 <div class="grid md:grid-cols-2 gap-10">
 
-                    <!-- TEAM A -->
                     <div class="teamCard bg-blue-600">
                         <h3 x-text="single.teamA.name"></h3>
                         <div class="score" x-text="single.teamA.score"></div>
@@ -81,7 +83,6 @@
                         </div>
                     </div>
 
-                    <!-- TEAM B -->
                     <div class="teamCard bg-green-600">
                         <h3 x-text="single.teamB.name"></h3>
                         <div class="score" x-text="single.teamB.score"></div>
@@ -98,33 +99,42 @@
 
     <!-- TWIN MODE -->
     <template x-if="mode==='twin'">
-        <div>
-            <h2 class="sectionTitle">Twin-Modus</h2>
+        <div class="viewCard space-y-10">
+            <div class="viewHeader">
+                <h2>Twin-Modus</h2>
+                <button @click="backToMenu" class="backBtn">Modus wechseln</button>
+            </div>
 
-            <div class="grid md:grid-cols-2 gap-6 mb-12">
+            <div class="grid md:grid-cols-2 gap-6">
                 <input x-model="twin.team1" placeholder="Team 1" class="input">
                 <input x-model="twin.team2" placeholder="Team 2" class="input">
             </div>
 
             <template x-if="twin.team1 && twin.team2">
-                <div class="space-y-12">
+                <div class="space-y-10">
 
+                    <!-- ROUND BAR -->
                     <div class="roundBar">
-                        <div>Runde <span x-text="twin.round"></span></div>
+                        <div class="roundInfo">
+                            <div class="text-xs opacity-60 tracking-wider">RUNDE</div>
+                            <div class="text-2xl font-bold" x-text="twin.round"></div>
+                        </div>
                         <button @click="nextRound" class="nextBtn">Nächste Runde</button>
                     </div>
 
-                    <div class="grid lg:grid-cols-2 gap-10">
+                    <!-- MATCHES -->
+                    <div class="grid xl:grid-cols-2 gap-10">
 
                         <!-- MATCH 1 -->
                         <div class="matchCard">
                             <div class="matchHeader">Spiel 1</div>
-                            <div class="matchTeams">
+
+                            <div class="matchTeam">
                                 <span x-text="match1A"></span>
-                                <div class="scoreRow">
+                                <div class="miniScoreRow">
                                     <button @click="dec('m1a')" class="miniBtn">−</button>
                                     <span x-text="twin.scores.m1a"></span>
-                                    <span class="opacity-50">:</span>
+                                    <span class="opacity-40">:</span>
                                     <span x-text="twin.scores.m1b"></span>
                                     <button @click="inc('m1b')" class="miniBtn">+</button>
                                 </div>
@@ -135,12 +145,13 @@
                         <!-- MATCH 2 -->
                         <div class="matchCard">
                             <div class="matchHeader">Spiel 2</div>
-                            <div class="matchTeams">
+
+                            <div class="matchTeam">
                                 <span x-text="match2A"></span>
-                                <div class="scoreRow">
+                                <div class="miniScoreRow">
                                     <button @click="dec('m2a')" class="miniBtn">−</button>
                                     <span x-text="twin.scores.m2a"></span>
-                                    <span class="opacity-50">:</span>
+                                    <span class="opacity-40">:</span>
                                     <span x-text="twin.scores.m2b"></span>
                                     <button @click="inc('m2b')" class="miniBtn">+</button>
                                 </div>
@@ -149,121 +160,12 @@
                         </div>
 
                     </div>
-                </div>
-            </template>
-        </div>
-    </template>
 
-</div>
+                    <!-- DASHBOARD -->
+                    <div class="dashboard">
+                        <h3 class="dashTitle">NFV Twin Dashboard</h3>
 
-<style>
-.modeCard { @apply text-white text-3xl font-bold p-16 rounded-3xl shadow-xl transition transform hover:scale-105 }
-.sectionTitle { @apply text-3xl md:text-4xl font-bold text-center mb-12 }
-.input { @apply p-4 border rounded-xl w-full text-lg shadow-sm focus:ring-2 focus:ring-indigo-400 }
-
-.ctrlBtn { @apply px-6 py-3 rounded-xl font-bold shadow }
-.timeBtn { @apply px-4 py-2 rounded-lg font-bold shadow }
-
-.teamCard { @apply text-white p-10 rounded-3xl text-center shadow-2xl }
-.teamCard h3 { @apply text-2xl md:text-3xl font-bold mb-6 }
-.score { @apply text-7xl md:text-8xl font-black mb-8 }
-.goalRow { @apply flex justify-center items-center gap-6 }
-.goalBtnPlus { @apply px-10 py-4 bg-white text-black text-xl font-bold rounded-xl shadow hover:bg-gray-100 }
-.goalBtnMinus { @apply px-6 py-4 bg-black/20 text-white text-2xl font-bold rounded-xl shadow hover:bg-black/30 }
-
-.matchCard { @apply bg-white p-8 rounded-3xl shadow-xl border }
-.matchHeader { @apply text-xl font-bold mb-6 text-indigo-700 }
-.matchTeams { @apply space-y-4 text-xl font-semibold text-center }
-.scoreRow { @apply flex justify-center items-center gap-5 text-4xl font-black my-4 }
-.miniBtn { @apply w-12 h-12 rounded-xl bg-indigo-600 text-white text-2xl font-bold shadow hover:bg-indigo-700 }
-
-.roundBar { @apply flex flex-col md:flex-row items-center justify-between gap-6 bg-indigo-50 border border-indigo-200 px-6 py-4 rounded-2xl }
-.nextBtn { @apply px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold shadow hover:bg-indigo-700 }
-</style>
-
-<script>
-function app(){
-return{
-    mode:null,
-
-    // TIMER
-    timeLeft:25*60,
-    timerDisplay:'25:00',
-    isRunning:false,
-    timer:null,
-
-    init(){ this.updateDisplay() },
-
-    updateDisplay(){
-        const m=Math.floor(this.timeLeft/60)
-        const s=this.timeLeft%60
-        this.timerDisplay=`${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`
-    },
-
-    startTimer(){
-        if(this.isRunning){
-            clearInterval(this.timer)
-            this.isRunning=false
-        }else{
-            this.isRunning=true
-            this.timer=setInterval(()=>{
-                if(this.timeLeft>0){
-                    this.timeLeft--
-                    this.updateDisplay()
-                }else{
-                    this.stopTimer()
-                    alert("Zeit abgelaufen!")
-                }
-            },1000)
-        }
-    },
-
-    stopTimer(){
-        clearInterval(this.timer)
-        this.isRunning=false
-    },
-
-    resetTimer(){
-        this.stopTimer()
-        this.timeLeft=25*60
-        this.updateDisplay()
-    },
-
-    setMinutes(m){
-        this.stopTimer()
-        this.timeLeft=m*60
-        this.updateDisplay()
-    },
-
-    // SCORE HELPERS
-    decrement(team){ if(team.score>0) team.score-- },
-    inc(key){ this.twin.scores[key]++ },
-    dec(key){ if(this.twin.scores[key]>0) this.twin.scores[key]-- },
-
-    // SINGLE
-    single:{
-        teamA:{name:'',score:0},
-        teamB:{name:'',score:0}
-    },
-
-    // TWIN
-    twin:{
-        team1:'', team2:'',
-        round:1,
-        scores:{m1a:0,m1b:0,m2a:0,m2b:0}
-    },
-
-    get match1A(){ return this.twin.team1 + ' A' },
-    get match1B(){ return this.twin.round===1 ? this.twin.team2+' A' : this.twin.team2+' B' },
-    get match2A(){ return this.twin.team1 + ' B' },
-    get match2B(){ return this.twin.round===1 ? this.twin.team2+' B' : this.twin.team2+' A' },
-
-    nextRound(){
-        this.twin.round = this.twin.round===1 ? 2 : 1
-        this.twin.scores={m1a:0,m1b:0,m2a:0,m2b:0}
-    }
-}}
-</script>
-
-</body>
-</html>
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div class="dashCard">
+                                <div class="dashTeam" x-text="twin.team1"></div>
+                                <d
