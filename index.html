@@ -130,11 +130,13 @@
                             <div class="matchTeam">
                                 <span x-text="match1A"></span>
                                 <div class="miniScoreRow">
-                                    <button @click="dec('m1a')" class="miniBtn">−</button>
-                                    <span x-text="twin.scores.m1a"></span>
+                                    <button @click="dec($el.closest('.matchCard').querySelectorAll('[x-text^=\"twin.scores\"]')[0].getAttribute('x-text').split('.').pop())" class="miniBtn">−</button>
+                                    <button @click="inc($el.closest('.matchCard').querySelectorAll('[x-text^=\"twin.scores\"]')[0].getAttribute('x-text').split('.').pop())" class="miniBtn">+</button>
+                                    <span x-text="$el.closest('.matchCard').querySelectorAll('[x-text^=\"twin.scores\"]')[0].__x.$data.twin.scores[$el.closest('.matchCard').querySelectorAll('[x-text^=\"twin.scores\"]')[0].getAttribute('x-text').split('.').pop()]"></span>
                                     <span class="opacity-40">:</span>
-                                    <span x-text="twin.scores.m1b"></span>
-                                    <button @click="inc('m1b')" class="miniBtn">+</button>
+                                    <span x-text="$el.closest('.matchCard').querySelectorAll('[x-text^=\"twin.scores\"]')[1].__x.$data.twin.scores[$el.closest('.matchCard').querySelectorAll('[x-text^=\"twin.scores\"]')[1].getAttribute('x-text').split('.').pop()]"></span>
+                                    <button @click="dec($el.closest('.matchCard').querySelectorAll('[x-text^=\"twin.scores\"]')[1].getAttribute('x-text').split('.').pop())" class="miniBtn">−</button>
+                                    <button @click="inc($el.closest('.matchCard').querySelectorAll('[x-text^=\"twin.scores\"]')[1].getAttribute('x-text').split('.').pop())" class="miniBtn">+</button>
                                 </div>
                                 <span x-text="match1B"></span>
                             </div>
@@ -147,11 +149,13 @@
                             <div class="matchTeam">
                                 <span x-text="match2A"></span>
                                 <div class="miniScoreRow">
-                                    <button @click="dec('m2a')" class="miniBtn">−</button>
-                                    <span x-text="twin.scores.m2a"></span>
+                                    <button @click="dec($el.closest('.matchCard').querySelectorAll('[x-text^=\"twin.scores\"]')[0].getAttribute('x-text').split('.').pop())" class="miniBtn">−</button>
+                                    <button @click="inc($el.closest('.matchCard').querySelectorAll('[x-text^=\"twin.scores\"]')[0].getAttribute('x-text').split('.').pop())" class="miniBtn">+</button>
+                                    <span x-text="$el.closest('.matchCard').querySelectorAll('[x-text^=\"twin.scores\"]')[0].__x.$data.twin.scores[$el.closest('.matchCard').querySelectorAll('[x-text^=\"twin.scores\"]')[0].getAttribute('x-text').split('.').pop()]"></span>
                                     <span class="opacity-40">:</span>
-                                    <span x-text="twin.scores.m2b"></span>
-                                    <button @click="inc('m2b')" class="miniBtn">+</button>
+                                    <span x-text="$el.closest('.matchCard').querySelectorAll('[x-text^=\"twin.scores\"]')[1].__x.$data.twin.scores[$el.closest('.matchCard').querySelectorAll('[x-text^=\"twin.scores\"]')[1].getAttribute('x-text').split('.').pop()]"></span>
+                                    <button @click="dec($el.closest('.matchCard').querySelectorAll('[x-text^=\"twin.scores\"]')[1].getAttribute('x-text').split('.').pop())" class="miniBtn">−</button>
+                                    <button @click="inc($el.closest('.matchCard').querySelectorAll('[x-text^=\"twin.scores\"]')[1].getAttribute('x-text').split('.').pop())" class="miniBtn">+</button>
                                 </div>
                                 <span x-text="match2B"></span>
                             </div>
