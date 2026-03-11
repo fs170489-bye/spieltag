@@ -303,9 +303,8 @@
 </style>
 
 <script>
-function app(){
-// Alpine root component
-return {
+document.addEventListener('alpine:init', () => {
+  Alpine.data('app', () => ({
     mode:null,
 
     // TIMER
@@ -315,34 +314,34 @@ return {
     timer:null,
 
     init(){
-        this.loadState()
-        this.updateDisplay()
-        this.$watch('$data', () => this.saveState())
+      this.loadState()
+      this.updateDisplay()
+      this.$watch('$data', () => this.saveState())
     },
 
     // ---------- TIMER ----------
     updateDisplay(){
-        const m=Math.floor(this.timeLeft/60)
-        const s=this.timeLeft%60
-        this.timerDisplay=`${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`
+      const m=Math.floor(this.timeLeft/60)
+      const s=this.timeLeft%60
+      this.timerDisplay=`${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`
     },
 
     startTimer(){
-        if(this.isRunning){
-            clearInterval(this.timer)
-            this.isRunning=false
-        }else{
-            this.isRunning=true
-            this.timer=setInterval(()=>{
-                if(this.timeLeft>0){
-                    this.timeLeft--
-                    this.updateDisplay()
-                }else{
-                    this.stopTimer()
-                    alert('Zeit abgelaufen!')
-                }
-            },1000)
-        }
+      if(this.isRunning){
+        clearInterval(this.timer)
+        this.isRunning=false
+      }else{
+        this.isRunning=true
+        this.timer=setInterval(()=>{
+          if(this.timeLeft>0){
+            this.timeLeft--
+            this.updateDisplay()
+          }else{
+            this.stopTimer()
+            alert('Zeit abgelaufen!')
+          }
+        },1000)
+      }
     },
 
     stopTimer(){ clearInterval(this.timer); this.isRunning=false },
@@ -361,22 +360,22 @@ return {
 
     // ---------- SINGLE ----------
     single:{
-        teamA:{name:'',score:0},
-        teamB:{name:'',score:0}
+      teamA:{name:'',score:0},
+      teamB:{name:'',score:0}
     },
-
-    // ---------- TWIN ----------
-    twin:{
-        team1:'', team2:'',
-        round:1,
-        scores:{m1a:0,m1b:0,m2a:0,m2b:0,m3a:0,m3b:0,m4a:0,m4b:0},
-        tendenzTotal:{team1:0, team2:0}
-    },,
 
     // ---------- FIELD CONFIG ----------
     fields:2,
     setFields(n){ this.fields=n },
     fieldBtnClass(n){ return 'px-4 py-2 rounded-xl font-semibold shadow ' + (this.fields===n ? 'bg-indigo-600 text-white' : 'bg-slate-200 hover:bg-slate-300') },
+
+    // ---------- TWIN ----------
+    twin:{
+      team1:'', team2:'',
+      round:1,
+      scores:{m1a:0,m1b:0,m2a:0,m2b:0,m3a:0,m3b:0,m4a:0,m4b:0},
+      tendenzTotal:{team1:0, team2:0}
+    },
 
     // ---------- MATCH LABELS ----------
     get match1A(){ return this.twin.team1 + ' A' },
@@ -384,81 +383,67 @@ return {
     get match2A(){ return this.twin.team1 + ' B' },
     get match2B(){ return this.twin.round===1 ? this.twin.team2+' B' : this.twin.team2+' A' },
 
-    // ---------- ROUND HANDLING ----------
-    nextRound(){
-        const t1 = this.calcRoundT1()
-        const t2 = this.calcRoundT2()
-        this.twin.tendenzTotal.team1 += t1
-        this.twin.tendenzTotal.team2 += t2
-        this.twin.round++
-        this.resetFieldScores()
-    },
-
-    prevRound(){
-        if(this.twin.round>1) this.twin.round--
-    },
-
     // ---------- ROUND TENDENZ HELPERS ----------
     win(a,b){ return a>b?1:(a<b?0:1) },
     calcRoundT1(){
-        let t = this.win(this.twin.scores.m1a,this.twin.scores.m1b) + this.win(this.twin.scores.m2a,this.twin.scores.m2b)
-        if(this.fields>=3) t += this.win(this.twin.scores.m3a,this.twin.scores.m3b)
-        if(this.fields>=4) t += this.win(this.twin.scores.m4a,this.twin.scores.m4b)
-        return t
+      let t = this.win(this.twin.scores.m1a,this.twin.scores.m1b) + this.win(this.twin.scores.m2a,this.twin.scores.m2b)
+      if(this.fields>=3) t += this.win(this.twin.scores.m3a,this.twin.scores.m3b)
+      if(this.fields>=4) t += this.win(this.twin.scores.m4a,this.twin.scores.m4b)
+      return t
     },
     calcRoundT2(){
-        let t = this.win(this.twin.scores.m1b,this.twin.scores.m1a) + this.win(this.twin.scores.m2b,this.twin.scores.m2a)
-        if(this.fields>=3) t += this.win(this.twin.scores.m3b,this.twin.scores.m3a)
-        if(this.fields>=4) t += this.win(this.twin.scores.m4b,this.twin.scores.m4a)
-        return t
+      let t = this.win(this.twin.scores.m1b,this.twin.scores.m1a) + this.win(this.twin.scores.m2b,this.twin.scores.m2a)
+      if(this.fields>=3) t += this.win(this.twin.scores.m3b,this.twin.scores.m3a)
+      if(this.fields>=4) t += this.win(this.twin.scores.m4b,this.twin.scores.m4a)
+      return t
     },
     resetFieldScores(){ this.twin.scores={m1a:0,m1b:0,m2a:0,m2b:0,m3a:0,m3b:0,m4a:0,m4b:0} },
 
-    // ---------- DASHBOARD ----------
-    // Aktuelle Runde in Tendenz umrechnen (live)
-    get current_m1_t1(){ return this.twin.scores.m1a > this.twin.scores.m1b ? 1 : (this.twin.scores.m1a < this.twin.scores.m1b ? 0 : 1) },
-    get current_m1_t2(){ return this.twin.scores.m1b > this.twin.scores.m1a ? 1 : (this.twin.scores.m1b < this.twin.scores.m1a ? 0 : 1) },
-    get current_m2_t1(){ return this.twin.scores.m2a > this.twin.scores.m2b ? 1 : (this.twin.scores.m2a < this.twin.scores.m2b ? 0 : 1) },
-    get current_m2_t2(){ return this.twin.scores.m2b > this.twin.scores.m2a ? 1 : (this.twin.scores.m2b < this.twin.scores.m2a ? 0 : 1) },
+    nextRound(){
+      this.twin.tendenzTotal.team1 += this.calcRoundT1()
+      this.twin.tendenzTotal.team2 += this.calcRoundT2()
+      this.twin.round++
+      this.resetFieldScores()
+    },
 
-    // Gesamt‑Tendenz = vergangene Runden + aktuelle Runde (NFV Twin)
-    get team1Tendenz(){
-        return this.twin.tendenzTotal.team1 + this.current_m1_t1 + this.current_m2_t1
-    },
-    get team2Tendenz(){
-        return this.twin.tendenzTotal.team2 + this.current_m1_t2 + this.current_m2_t2
-    },
+    prevRound(){ if(this.twin.round>1) this.twin.round-- },
+
+    // ---------- DASHBOARD ----------
+    get team1Tendenz(){ return this.twin.tendenzTotal.team1 + this.calcRoundT1() },
+    get team2Tendenz(){ return this.twin.tendenzTotal.team2 + this.calcRoundT2() },
 
     get tendenzText(){
-        if(this.team1Tendenz > this.team2Tendenz) return this.twin.team1 + ' führt'
-        if(this.team1Tendenz < this.team2Tendenz) return this.twin.team2 + ' führt'
-        return 'Gleichstand'
+      if(this.team1Tendenz > this.team2Tendenz) return this.twin.team1 + ' führt'
+      if(this.team1Tendenz < this.team2Tendenz) return this.twin.team2 + ' führt'
+      return 'Gleichstand'
     },
 
     // ---------- LOCAL STORAGE ----------
     saveState(){
-        const data = JSON.stringify({
-            mode:this.mode,
-            timeLeft:this.timeLeft,
-            single:this.single,
-            twin:this.twin
-        })
-        localStorage.setItem('nfv_scoreboard', data)
+      const data = JSON.stringify({
+        mode:this.mode,
+        timeLeft:this.timeLeft,
+        single:this.single,
+        twin:this.twin,
+        fields:this.fields
+      })
+      localStorage.setItem('nfv_scoreboard', data)
     },
 
     loadState(){
-        const raw = localStorage.getItem('nfv_scoreboard')
-        if(!raw) return
-        try{
-            const s = JSON.parse(raw)
-            this.mode = s.mode
-            this.timeLeft = s.timeLeft ?? this.timeLeft
-            this.single = s.single ?? this.single
-            this.twin = s.twin ?? this.twin
-        }catch(e){}
+      const raw = localStorage.getItem('nfv_scoreboard')
+      if(!raw) return
+      try{
+        const s = JSON.parse(raw)
+        this.mode = s.mode
+        this.timeLeft = s.timeLeft ?? this.timeLeft
+        this.single = s.single ?? this.single
+        this.twin = s.twin ?? this.twin
+        this.fields = s.fields ?? this.fields
+      }catch(e){}
     }
-}
-}
+  }))
+})
 </script>
 
 </body>
