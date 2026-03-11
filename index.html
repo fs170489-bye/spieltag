@@ -182,17 +182,19 @@
                         <div class="grid md:grid-cols-2 gap-8">
                             <div class="dashCard">
                                 <div class="dashTeam" x-text="twin.team1"></div>
-                                <div>Gesamt Tore: <b x-text="team1Goals"></b></div>
-                                <div>Gegentore: <b x-text="team2Goals"></b></div>
-                                <div>Tendenz: <b :class="goalDiffClass(team1Diff)" x-text="team1Diff"></b></div>
+                                <div>Tendenzpunkte: <b x-text="team1Tendenz"></b></div>
                             </div>
 
                             <div class="dashCard">
                                 <div class="dashTeam" x-text="twin.team2"></div>
-                                <div>Gesamt Tore: <b x-text="team2Goals"></b></div>
-                                <div>Gegentore: <b x-text="team1Goals"></b></div>
-                                <div>Tendenz: <b :class="goalDiffClass(team2Diff)" x-text="team2Diff"></b></div>
+                                <div>Tendenzpunkte: <b x-text="team2Tendenz"></b></div>
                             </div>
+                        </div>
+
+                        <div class="mt-8 text-center">
+                            <div class="text-lg opacity-70">Gesamtwertung</div>
+                            <div class="text-4xl font-black tracking-wide" x-text="team1Tendenz + ' : ' + team2Tendenz"></div>
+                            <div class="mt-2 text-xl font-semibold" x-text="tendenzText"></div>
                         </div>
                     </div>
 
