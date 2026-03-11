@@ -184,14 +184,14 @@
                                 <div class="dashTeam" x-text="twin.team1"></div>
                                 <div>Gesamt Tore: <b x-text="team1Goals"></b></div>
                                 <div>Gegentore: <b x-text="team2Goals"></b></div>
-                                <div>Differenz: <b :class="goalDiffClass(team1Diff)" x-text="team1Diff"></b></div>
+                                <div>Tendenz: <b :class="goalDiffClass(team1Diff)" x-text="team1Diff"></b></div>
                             </div>
 
                             <div class="dashCard">
                                 <div class="dashTeam" x-text="twin.team2"></div>
                                 <div>Gesamt Tore: <b x-text="team2Goals"></b></div>
                                 <div>Gegentore: <b x-text="team1Goals"></b></div>
-                                <div>Differenz: <b :class="goalDiffClass(team2Diff)" x-text="team2Diff"></b></div>
+                                <div>Tendenz: <b :class="goalDiffClass(team2Diff)" x-text="team2Diff"></b></div>
                             </div>
                         </div>
                     </div>
@@ -326,12 +326,45 @@ return{
         this.twin.scores={m1a:0,m1b:0,m2a:0,m2b:0}
     },
 
-    // ---------- DASHBOARD CALC (NFV Twin) ----------
-    // Gesamt: alle 4 Teilteams zählen fürs Hauptteam
-    get team1Goals(){ return this.twin.scores.m1a + this.twin.scores.m2a },
-    get team2Goals(){ return this.twin.scores.m1b + this.twin.scores.m2b },
-    get team1Diff(){ return this.team1Goals - this.team2Goals },
-    get team2Diff(){ return this.team2Goals - this.team1Goals },
+    // ---------- DASHBOARD CALC (NFV Twin Tendenzwertung) ----------
+    // Pro Spielfeld wird das Ergebnis in Tendenz umgerechnet:
+    // Sieg = 1 , Niederlage = 0 , Unentschieden = 1:1
+
+    // Spiel 1 Tendenz
+    get m1_t1(){
+        if(this.twin.scores.m1a > this.twin.scores.m1b) return 1
+        if(this.twin.scores.m1a < this.twin.scores.m1b) return 0
+        return 1
+    },
+    get m1_t2(){
+        if(this.twin.scores.m1b > this.twin.scores.m1a) return 1
+        if(this.twin.scores.m1b < this.twin.scores.m1a) return 0
+        return 1
+    },
+
+    // Spiel 2 Tendenz
+    get m2_t1(){
+        if(this.twin.scores.m2a > this.twin.scores.m2b) return 1
+        if(this.twin.scores.m2a < this.twin.scores.m2b) return 0
+        return 1
+    },
+    get m2_t2(){
+        if(this.twin.scores.m2b > this.twin.scores.m2a) return 1
+        if(this.twin.scores.m2b < this.twin.scores.m2a) return 0
+        return 1
+    },
+
+    // NFV Twin: Team 1A + Team 1B = Team 1 Gesamt
+    //           Team 2A + Team 2B = Team 2 Gesamt
+    get team1Tendenz(){ return this.m1_t1 + this.m2_t1 },
+    get team2Tendenz(){ return this.m1_t2 + this.m2_t2 },
+
+    // Anzeige (wer führt)
+    get tendenzText(){
+        if(this.team1Tendenz > this.team2Tendenz) return this.twin.team1 + ' führt'
+        if(this.team1Tendenz < this.team2Tendenz) return this.twin.team2 + ' führt'
+        return 'Gleichstand'
+    },
 
     goalDiffClass(v){ if(v>0) return 'pos'; if(v<0) return 'neg'; return 'zero' },
 
