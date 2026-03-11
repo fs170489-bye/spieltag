@@ -351,8 +351,19 @@ return {
     },
 
     // ---------- DASHBOARD ----------
-    get team1Tendenz(){ return this.twin.tendenzTotal.team1 },
-    get team2Tendenz(){ return this.twin.tendenzTotal.team2 },
+    // Aktuelle Runde in Tendenz umrechnen (live)
+    get current_m1_t1(){ return this.twin.scores.m1a > this.twin.scores.m1b ? 1 : (this.twin.scores.m1a < this.twin.scores.m1b ? 0 : 1) },
+    get current_m1_t2(){ return this.twin.scores.m1b > this.twin.scores.m1a ? 1 : (this.twin.scores.m1b < this.twin.scores.m1a ? 0 : 1) },
+    get current_m2_t1(){ return this.twin.scores.m2a > this.twin.scores.m2b ? 1 : (this.twin.scores.m2a < this.twin.scores.m2b ? 0 : 1) },
+    get current_m2_t2(){ return this.twin.scores.m2b > this.twin.scores.m2a ? 1 : (this.twin.scores.m2b < this.twin.scores.m2a ? 0 : 1) },
+
+    // Gesamt-Tendenz = vergangene Runden + aktuelle Runde (NFV Twin)
+    get team1Tendenz(){
+        return this.twin.tendenzTotal.team1 + this.current_m1_t1 + this.current_m2_t1
+    },
+    get team2Tendenz(){
+        return this.twin.tendenzTotal.team2 + this.current_m1_t2 + this.current_m2_t2
+    },
 
     get tendenzText(){
         if(this.team1Tendenz > this.team2Tendenz) return this.twin.team1 + ' führt'
