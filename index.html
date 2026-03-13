@@ -10,7 +10,7 @@
 
 <body class="bg-gradient-to-br from-slate-100 to-indigo-100 min-h-screen p-4 md:p-8 font-sans">
 
-<div x-data="app()" x-init="init()" class="max-w-7xl mx-auto space-y-8">
+<div x-data="app" x-init="init()" class="max-w-7xl mx-auto space-y-8">
 
     <!-- HEADER / TIMER BAR -->
     <div class="bg-slate-900 text-white rounded-3xl p-6 md:p-8 shadow-2xl">
@@ -152,7 +152,7 @@
                     </div>
 
                     <!-- MATCHES -->
-                    <div x-show="fields" class="grid xl:grid-cols-2 gap-10">
+                    <div x-show="showMatches" class="grid xl:grid-cols-2 gap-10">
 
                         <!-- HF1 -->
                         <div class="matchCard" x-show="fields >= 1">
@@ -416,8 +416,9 @@ document.addEventListener('alpine:init', () => {
     },
 
     // ---------- FIELD CONFIG ----------
-    fields:2,
-    setFields(n){ this.fields=n },
+    fields:0,
+    showMatches:false,
+    setFields(n){ this.fields=n; this.showMatches=true },
     fieldBtnClass(n){ return 'px-4 py-2 rounded-xl font-semibold shadow ' + (this.fields===n ? 'bg-indigo-600 text-white' : 'bg-slate-200 hover:bg-slate-300') },
 
     // ---------- TWIN ----------
