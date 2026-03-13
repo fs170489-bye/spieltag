@@ -160,7 +160,29 @@
                             <div class="matchTeam">
                                 <!-- Team Links -->
                                 <div class="flex flex-col items-center gap-3">
-                                    <div class="font-semibold text-center" x-text="$el.closest('.matchCard').querySelector('.matchHeader').innerText + ' – ' + (twin.round===1 ? twin.team1+' A' : twin.team1+' A')"></div>
+                                    <div class="font-semibold text-center" x-text="match1A"></div>
+                                    <div class="flex gap-2">
+                                        <button @click="dec('m1a')" class="miniBtn">−</button>
+                                        <button @click="inc('m1a')" class="miniBtn">+</button>
+                                    </div>
+                                </div>
+
+                                <!-- Score Mitte -->
+                                <div class="scoreCenter">
+                                    <span x-text="twin.scores.m1a"></span>
+                                    <span class="opacity-40 px-2">:</span>
+                                    <span x-text="twin.scores.m1b"></span>
+                                </div>
+
+                                <!-- Team Rechts -->
+                                <div class="flex flex-col items-center gap-3">
+                                    <div class="font-semibold text-center" x-text="match1B"></div>
+                                    <div class="flex gap-2">
+                                        <button @click="dec('m1b')" class="miniBtn">−</button>
+                                        <button @click="inc('m1b')" class="miniBtn">+</button>
+                                    </div>
+                                </div>
+                            </div>
                                     <div class="flex items-center gap-3">
                                         <button @click="dec(keyLeft($el))" class="miniBtn">−</button>
                                         <button @click="inc(keyLeft($el))" class="miniBtn">+</button>
@@ -193,7 +215,29 @@
                             <div class="matchTeam">
                                 <!-- Team Links -->
                                 <div class="flex flex-col items-center gap-3">
-                                    <div class="font-semibold text-center" x-text="$el.closest('.matchCard').querySelector('.matchHeader').innerText + ' – ' + (twin.round===1 ? twin.team1+' A' : twin.team1+' A')"></div>
+                                    <div class="font-semibold text-center" x-text="match1A"></div>
+                                    <div class="flex gap-2">
+                                        <button @click="dec('m1a')" class="miniBtn">−</button>
+                                        <button @click="inc('m1a')" class="miniBtn">+</button>
+                                    </div>
+                                </div>
+
+                                <!-- Score Mitte -->
+                                <div class="scoreCenter">
+                                    <span x-text="twin.scores.m1a"></span>
+                                    <span class="opacity-40 px-2">:</span>
+                                    <span x-text="twin.scores.m1b"></span>
+                                </div>
+
+                                <!-- Team Rechts -->
+                                <div class="flex flex-col items-center gap-3">
+                                    <div class="font-semibold text-center" x-text="match1B"></div>
+                                    <div class="flex gap-2">
+                                        <button @click="dec('m1b')" class="miniBtn">−</button>
+                                        <button @click="inc('m1b')" class="miniBtn">+</button>
+                                    </div>
+                                </div>
+                            </div>
                                     <div class="flex items-center gap-3">
                                         <button @click="dec(keyLeft($el))" class="miniBtn">−</button>
                                         <button @click="inc(keyLeft($el))" class="miniBtn">+</button>
@@ -226,7 +270,29 @@
                             <div class="matchTeam">
                                 <!-- Team Links -->
                                 <div class="flex flex-col items-center gap-3">
-                                    <div class="font-semibold text-center" x-text="$el.closest('.matchCard').querySelector('.matchHeader').innerText + ' – ' + (twin.round===1 ? twin.team1+' A' : twin.team1+' A')"></div>
+                                    <div class="font-semibold text-center" x-text="match1A"></div>
+                                    <div class="flex gap-2">
+                                        <button @click="dec('m1a')" class="miniBtn">−</button>
+                                        <button @click="inc('m1a')" class="miniBtn">+</button>
+                                    </div>
+                                </div>
+
+                                <!-- Score Mitte -->
+                                <div class="scoreCenter">
+                                    <span x-text="twin.scores.m1a"></span>
+                                    <span class="opacity-40 px-2">:</span>
+                                    <span x-text="twin.scores.m1b"></span>
+                                </div>
+
+                                <!-- Team Rechts -->
+                                <div class="flex flex-col items-center gap-3">
+                                    <div class="font-semibold text-center" x-text="match1B"></div>
+                                    <div class="flex gap-2">
+                                        <button @click="dec('m1b')" class="miniBtn">−</button>
+                                        <button @click="inc('m1b')" class="miniBtn">+</button>
+                                    </div>
+                                </div>
+                            </div>
                                     <div class="flex items-center gap-3">
                                         <button @click="dec(keyLeft($el))" class="miniBtn">−</button>
                                         <button @click="inc(keyLeft($el))" class="miniBtn">+</button>
@@ -259,7 +325,29 @@
                             <div class="matchTeam">
                                 <!-- Team Links -->
                                 <div class="flex flex-col items-center gap-3">
-                                    <div class="font-semibold text-center" x-text="$el.closest('.matchCard').querySelector('.matchHeader').innerText + ' – ' + (twin.round===1 ? twin.team1+' A' : twin.team1+' A')"></div>
+                                    <div class="font-semibold text-center" x-text="match1A"></div>
+                                    <div class="flex gap-2">
+                                        <button @click="dec('m1a')" class="miniBtn">−</button>
+                                        <button @click="inc('m1a')" class="miniBtn">+</button>
+                                    </div>
+                                </div>
+
+                                <!-- Score Mitte -->
+                                <div class="scoreCenter">
+                                    <span x-text="twin.scores.m1a"></span>
+                                    <span class="opacity-40 px-2">:</span>
+                                    <span x-text="twin.scores.m1b"></span>
+                                </div>
+
+                                <!-- Team Rechts -->
+                                <div class="flex flex-col items-center gap-3">
+                                    <div class="font-semibold text-center" x-text="match1B"></div>
+                                    <div class="flex gap-2">
+                                        <button @click="dec('m1b')" class="miniBtn">−</button>
+                                        <button @click="inc('m1b')" class="miniBtn">+</button>
+                                    </div>
+                                </div>
+                            </div>
                                     <div class="flex items-center gap-3">
                                         <button @click="dec(keyLeft($el))" class="miniBtn">−</button>
                                         <button @click="inc(keyLeft($el))" class="miniBtn">+</button>
