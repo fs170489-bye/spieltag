@@ -3,73 +3,129 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NFV Scoreboard</title>
+<title>NFV Twin Scoreboard</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 
-<body class="bg-gradient-to-br from-slate-100 to-indigo-100 min-h-screen p-6 font-sans">
+<body class="bg-slate-100 min-h-screen p-6 font-sans">
 
 <div x-data="app" class="max-w-6xl mx-auto space-y-8">
 
-<!-- TIMER -->
-<div class="bg-slate-900 text-white rounded-2xl p-6 flex justify-between items-center">
+<!-- TIMER / SCORE -->
+<div class="bg-slate-900 text-white p-6 rounded-2xl flex justify-between items-center">
+
 <div>
-<div class="text-xs opacity-60">SPIELZEIT</div>
+<div class="text-xs opacity-70">SPIELZEIT</div>
 <div class="text-5xl font-mono" x-text="timerDisplay"></div>
-</div>
-<div class="flex gap-3">
-<button @click="startTimer" class="px-5 py-2 bg-green-500 rounded-xl">Start / Pause</button>
-<button @click="resetTimer" class="px-5 py-2 bg-yellow-500 rounded-xl">Reset</button>
-</div>
-</div>
-
-<!-- MODUS -->
-<div x-show="step===0" class="bg-white p-10 rounded-3xl shadow-xl text-center">
-<h1 class="text-3xl font-bold mb-8">Spielmodus wählen</h1>
-<div class="flex justify-center gap-6">
-<button @click="mode='single'; step=1" class="px-8 py-4 bg-blue-600 text-white rounded-2xl">Single</button>
-<button @click="mode='twin'; step=1" class="px-8 py-4 bg-indigo-600 text-white rounded-2xl">Twin</button>
-</div>
-</div>
-
-<!-- TEAMS -->
-<div x-show="step===1" class="bg-white p-10 rounded-3xl shadow-xl space-y-6">
-<h2 class="text-2xl font-bold">Teams eingeben</h2>
-<div class="grid md:grid-cols-2 gap-6">
-<input x-model="team1" placeholder="Team 1" class="border p-3 rounded-xl">
-<input x-model="team2" placeholder="Team 2" class="border p-3 rounded-xl">
 </div>
 
 <div class="text-center">
-<button @click="if(team1 && team2) step=2" class="px-8 py-3 bg-indigo-600 text-white rounded-xl">Weiter zur Spielfeld Auswahl</button>
+<div class="text-xs opacity-70">TENDENZ</div>
+<div class="text-2xl font-bold">
+<span x-text="team1"></span>
+<span class="mx-2" x-text="points.team1"></span>
+:
+<span class="mx-2" x-text="points.team2"></span>
+<span x-text="team2"></span>
 </div>
 </div>
 
-<!-- FELDER -->
-<div x-show="step===2" class="bg-white p-10 rounded-3xl shadow-xl space-y-6">
-<h2 class="text-2xl font-bold">Spielfelder wählen</h2>
-
-<div class="flex gap-4 flex-wrap">
-<button @click="fields=2" :class="btnClass(2)">HF1 + HF2</button>
-<button @click="fields=3" :class="btnClass(3)">HF1 + HF2 + NF1</button>
-<button @click="fields=4" :class="btnClass(4)">HF1 + HF2 + NF1 + NF2</button>
+<div class="flex gap-3">
+<button @click="startPauseTimer" class="px-6 py-2 bg-green-500 rounded-xl">Start / Pause</button>
 </div>
 
-<div class="text-center pt-4">
-<button @click="if(fields) step=3" class="px-8 py-3 bg-green-600 text-white rounded-xl">Weiter zu Begegnungen</button>
+</div>
+
+
+<!-- STEP 0 MODE -->
+<div x-show="step===0" class="card">
+<h2 class="title">Modus auswählen</h2>
+<div class="flex gap-4">
+<button @click="mode='single';next()" class="btn">Single</button>
+<button @click="mode='twin';next()" class="btn">Twin</button>
 </div>
 </div>
 
-<!-- SPIELE -->
-<div x-show="step===3" class="space-y-8">
 
-<template x-if="fields>=1">
-<div class="match">
-<div class="matchTitle">HF1</div>
-<div class="matchRow">
+<!-- STEP 1 TEAM -->
+<div x-show="step===1" class="card">
+<h2 class="title">Teams eingeben</h2>
+
+<div class="grid grid-cols-2 gap-4">
+<input x-model="team1" placeholder="Team 1" class="input">
+<input x-model="team2" placeholder="Team 2" class="input">
+</div>
+
+<div class="flex justify-between">
+<button @click="prev" class="btnBack">Zurück</button>
+<button @click="next" class="btn" :disabled="!team1 || !team2">Weiter</button>
+</div>
+</div>
+
+
+<!-- STEP 2 FELDER -->
+<div x-show="step===2" class="card">
+<h2 class="title">Spielfelder wählen</h2>
+
+<div class="flex gap-3 flex-wrap">
+<button @click="fields=2" :class="fieldClass(2)">HF1 + HF2</button>
+<button @click="fields=3" :class="fieldClass(3)">HF1 + HF2 + NF1</button>
+<button @click="fields=4" :class="fieldClass(4)">HF1 + HF2 + NF1 + NF2</button>
+</div>
+
+<div class="flex justify-between">
+<button @click="prev" class="btnBack">Zurück</button>
+<button @click="next" class="btn" :disabled="!fields">Weiter</button>
+</div>
+</div>
+
+
+<!-- STEP 3 BEGEHNUNGEN -->
+<div x-show="step===3" class="card">
+<h2 class="title">Begegnungen wählen</h2>
+
+<select x-model.number="roundTotal" class="input w-40">
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+<option value="6">6</option>
+</select>
+
+<div class="flex justify-between">
+<button @click="prev" class="btnBack">Zurück</button>
+<button @click="next" class="btn">Begegnung 1 starten</button>
+</div>
+</div>
+
+
+<!-- STEP 4 TIMER SET -->
+<div x-show="step===4" class="card">
+<h2 class="title">Zeit einstellen</h2>
+
+<input type="number" x-model.number="minutes" class="input w-40">
+
+<div class="flex justify-between">
+<button @click="prev" class="btnBack">Zurück</button>
+<button @click="setMatchTime();next()" class="btn">Spiel starten</button>
+</div>
+</div>
+
+
+<!-- STEP 5 SPIELE -->
+<div x-show="step===5" class="space-y-6">
+
+<h2 class="title">Begegnung <span x-text="round"></span></h2>
+
+
+<!-- HF1 -->
+<div class="match" x-show="fields>=1">
+<h3>HF1</h3>
+<div class="row">
 <div class="team">
-<div x-text="team1 + ' A'"></div>
+<div x-text="team1+' A'"></div>
 <button @click="dec('m1a')">-</button>
 <button @click="inc('m1a')">+</button>
 </div>
@@ -79,20 +135,20 @@
 </div>
 
 <div class="team">
-<div x-text="team2 + ' A'"></div>
+<div x-text="team2+' A'"></div>
 <button @click="dec('m1b')">-</button>
 <button @click="inc('m1b')">+</button>
 </div>
 </div>
 </div>
-</template>
 
-<template x-if="fields>=2">
-<div class="match">
-<div class="matchTitle">HF2</div>
-<div class="matchRow">
+
+<!-- HF2 -->
+<div class="match" x-show="fields>=2">
+<h3>HF2</h3>
+<div class="row">
 <div class="team">
-<div x-text="team1 + ' B'"></div>
+<div x-text="team1+' B'"></div>
 <button @click="dec('m2a')">-</button>
 <button @click="inc('m2a')">+</button>
 </div>
@@ -102,89 +158,111 @@
 </div>
 
 <div class="team">
-<div x-text="team2 + ' B'"></div>
+<div x-text="team2+' B'"></div>
 <button @click="dec('m2b')">-</button>
 <button @click="inc('m2b')">+</button>
 </div>
 </div>
 </div>
-</template>
 
-<template x-if="fields>=3">
-<div class="match">
-<div class="matchTitle">NF1</div>
-<div class="matchRow">
-<div class="team">
-<div x-text="team1"></div>
-<button @click="dec('m3a')">-</button>
-<button @click="inc('m3a')">+</button>
-</div>
 
-<div class="score">
-<span x-text="scores.m3a"></span> : <span x-text="scores.m3b"></span>
-</div>
+<div class="flex justify-between pt-6">
+<button @click="prev" class="btnBack">Zurück</button>
 
-<div class="team">
-<div x-text="team2"></div>
-<button @click="dec('m3b')">-</button>
-<button @click="inc('m3b')">+</button>
-</div>
-</div>
-</div>
-</template>
+<button x-show="timerFinished && round<roundTotal" @click="nextRound" class="btn">
+Weiter zu Begegnung <span x-text="round+1"></span>
+</button>
 
-<template x-if="fields>=4">
-<div class="match">
-<div class="matchTitle">NF2</div>
-<div class="matchRow">
-<div class="team">
-<div x-text="team1"></div>
-<button @click="dec('m4a')">-</button>
-<button @click="inc('m4a')">+</button>
-</div>
-
-<div class="score">
-<span x-text="scores.m4a"></span> : <span x-text="scores.m4b"></span>
-</div>
-
-<div class="team">
-<div x-text="team2"></div>
-<button @click="dec('m4b')">-</button>
-<button @click="inc('m4b')">+</button>
-</div>
-</div>
-</div>
-</template>
+<button x-show="timerFinished && round===roundTotal" @click="step=6" class="btn">
+Weiter zum Endergebnis
+</button>
 
 </div>
+
+</div>
+
+
+<!-- STEP 6 RESULT -->
+<div x-show="step===6" class="card text-center">
+<h2 class="title">Endergebnis</h2>
+
+<div class="text-3xl font-bold">
+<span x-text="team1"></span>
+<span x-text="points.team1"></span>
+:
+<span x-text="points.team2"></span>
+<span x-text="team2"></span>
+</div>
+
+<button @click="location.reload()" class="btn mt-6">Neues Spiel</button>
+
+</div>
+
 
 </div>
 
 <style>
-.match{background:white;padding:20px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,0.1)}
-.matchTitle{font-weight:bold;margin-bottom:10px}
-.matchRow{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;text-align:center}
-.team button{margin:3px;padding:5px 10px;background:#4f46e5;color:white;border-radius:8px}
+.card{background:white;padding:30px;border-radius:20px;box-shadow:0 10px 20px rgba(0,0,0,0.1)}
+.title{font-size:24px;font-weight:bold;margin-bottom:20px}
+.btn{background:#4f46e5;color:white;padding:10px 20px;border-radius:10px}
+.btnBack{background:#94a3b8;color:white;padding:10px 20px;border-radius:10px}
+.input{border:1px solid #ddd;padding:10px;border-radius:10px}
+.match{background:white;padding:20px;border-radius:20px;box-shadow:0 6px 12px rgba(0,0,0,0.1)}
+.row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;text-align:center}
 .score{font-size:28px;font-weight:bold}
+.team button{margin:3px;background:#6366f1;color:white;border-radius:8px;padding:4px 10px}
 </style>
 
 <script>
 document.addEventListener('alpine:init',()=>{
+
 Alpine.data('app',()=>({
 
 step:0,
 mode:null,
+
 team1:'',
 team2:'',
+
 fields:0,
 
-scores:{m1a:0,m1b:0,m2a:0,m2b:0,m3a:0,m3b:0,m4a:0,m4b:0},
+round:1,
+roundTotal:2,
 
-// timer
+minutes:10,
 
-timeLeft:25*60,
-timerDisplay:'25:00',
+scores:{m1a:0,m1b:0,m2a:0,m2b:0},
+
+points:{team1:0,team2:0},
+
+// TIMER
+
+timeLeft:0,
 timer:null,
+timerDisplay:'00:00',
+
+timerFinished:false,
+
+setMatchTime(){
+this.timeLeft=this.minutes*60
+this.updateDisplay()
+},
+
+startPauseTimer(){
+if(this.timer){clearInterval(this.timer);this.timer=null;return}
+
+this.timer=setInterval(()=>{
+if(this.timeLeft>0){
+this.timeLeft--
+this.updateDisplay()
+}else{
+clearInterval(this.timer)
+this.timer=null
+this.timerFinished=true
+this.calcTendenz()
+}
+},1000)
+},
 
 updateDisplay(){
 let m=Math.floor(this.timeLeft/60)
@@ -192,21 +270,45 @@ let s=this.timeLeft%60
 this.timerDisplay=`${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`
 },
 
-startTimer(){
-if(this.timer){clearInterval(this.timer);this.timer=null;return}
-this.timer=setInterval(()=>{if(this.timeLeft>0){this.timeLeft--;this.updateDisplay()}},1000)
+calcTendenz(){
+let t1=0
+let t2=0
+
+if(this.scores.m1a>this.scores.m1b)t1++
+else if(this.scores.m1a<this.scores.m1b)t2++
+else{t1++;t2++}
+
+if(this.scores.m2a>this.scores.m2b)t1++
+else if(this.scores.m2a<this.scores.m2b)t2++
+else{t1++;t2++}
+
+this.points.team1+=t1
+this.points.team2+=t2
 },
 
-resetTimer(){this.timeLeft=25*60;this.updateDisplay()},
+nextRound(){
+this.round++
+this.timerFinished=false
+this.resetScores()
+this.setMatchTime()
+},
+
+resetScores(){
+this.scores={m1a:0,m1b:0,m2a:0,m2b:0}
+},
 
 inc(k){this.scores[k]++},
 dec(k){if(this.scores[k]>0)this.scores[k]--},
 
-btnClass(n){
-return 'px-5 py-2 rounded-xl '+(this.fields===n?'bg-indigo-600 text-white':'bg-slate-200')
+next(){this.step++},
+prev(){if(this.step>0)this.step--},
+
+fieldClass(n){
+return 'px-4 py-2 rounded-xl '+(this.fields===n?'bg-indigo-600 text-white':'bg-slate-200')
 }
 
 }))
+
 })
 </script>
 
