@@ -12,7 +12,7 @@
 
 <div x-data="app" class="max-w-6xl mx-auto space-y-8">
 
-<!-- TIMER / SCORE -->
+<!-- TIMER / TENDENZ -->
 <div class="bg-slate-900 text-white p-6 rounded-2xl flex justify-between items-center">
 
 <div>
@@ -33,6 +33,7 @@
 
 <div class="flex gap-3">
 <button @click="startPauseTimer" class="px-6 py-2 bg-green-500 rounded-xl">Start / Pause</button>
+<button @click="resetTimer" class="px-6 py-2 bg-yellow-500 rounded-xl">Reset</button>
 </div>
 
 </div>
@@ -103,7 +104,7 @@
 
 <!-- STEP 4 TIMER SET -->
 <div x-show="step===4" class="card">
-<h2 class="title">Zeit einstellen</h2>
+<h2 class="title">Zeit einstellen (Minuten)</h2>
 
 <input type="number" x-model.number="minutes" class="input w-40">
 
@@ -119,15 +120,14 @@
 
 <h2 class="title">Begegnung <span x-text="round"></span></h2>
 
-
 <!-- HF1 -->
 <div class="match" x-show="fields>=1">
 <h3>HF1</h3>
 <div class="row">
 <div class="team">
-<div x-text="team1+' A'"></div>
-<button @click="dec('m1a')">-</button>
-<button @click="inc('m1a')">+</button>
+<div x-text="team1+' '+rotation('A',1)"></div>
+<button @click="dec('m1a')" :disabled="timerFinished">-</button>
+<button @click="inc('m1a')" :disabled="timerFinished">+</button>
 </div>
 
 <div class="score">
@@ -135,9 +135,9 @@
 </div>
 
 <div class="team">
-<div x-text="team2+' A'"></div>
-<button @click="dec('m1b')">-</button>
-<button @click="inc('m1b')">+</button>
+<div x-text="team2+' '+rotation('B',1)"></div>
+<button @click="dec('m1b')" :disabled="timerFinished">-</button>
+<button @click="inc('m1b')" :disabled="timerFinished">+</button>
 </div>
 </div>
 </div>
@@ -148,9 +148,9 @@
 <h3>HF2</h3>
 <div class="row">
 <div class="team">
-<div x-text="team1+' B'"></div>
-<button @click="dec('m2a')">-</button>
-<button @click="inc('m2a')">+</button>
+<div x-text="team1+' '+rotation('A',2)"></div>
+<button @click="dec('m2a')" :disabled="timerFinished">-</button>
+<button @click="inc('m2a')" :disabled="timerFinished">+</button>
 </div>
 
 <div class="score">
@@ -158,9 +158,55 @@
 </div>
 
 <div class="team">
-<div x-text="team2+' B'"></div>
-<button @click="dec('m2b')">-</button>
-<button @click="inc('m2b')">+</button>
+<div x-text="team2+' '+rotation('B',2)"></div>
+<button @click="dec('m2b')" :disabled="timerFinished">-</button>
+<button @click="inc('m2b')" :disabled="timerFinished">+</button>
+</div>
+</div>
+</div>
+
+
+<!-- NF1 -->
+<div class="match" x-show="fields>=3">
+<h3>NF1</h3>
+<div class="row">
+<div class="team">
+<div x-text="team1+' '+rotation('A',3)"></div>
+<button @click="dec('m3a')" :disabled="timerFinished">-</button>
+<button @click="inc('m3a')" :disabled="timerFinished">+</button>
+</div>
+
+<div class="score">
+<span x-text="scores.m3a"></span> : <span x-text="scores.m3b"></span>
+</div>
+
+<div class="team">
+<div x-text="team2+' '+rotation('B',3)"></div>
+<button @click="dec('m3b')" :disabled="timerFinished">-</button>
+<button @click="inc('m3b')" :disabled="timerFinished">+</button>
+</div>
+</div>
+</div>
+
+
+<!-- NF2 -->
+<div class="match" x-show="fields>=4">
+<h3>NF2</h3>
+<div class="row">
+<div class="team">
+<div x-text="team1+' '+rotation('A',4)"></div>
+<button @click="dec('m4a')" :disabled="timerFinished">-</button>
+<button @click="inc('m4a')" :disabled="timerFinished">+</button>
+</div>
+
+<div class="score">
+<span x-text="scores.m4a"></span> : <span x-text="scores.m4b"></span>
+</div>
+
+<div class="team">
+<div x-text="team2+' '+rotation('B',4)"></div>
+<button @click="dec('m4b')" :disabled="timerFinished">-</button>
+<button @click="inc('m4b')" :disabled="timerFinished">+</button>
 </div>
 </div>
 </div>
@@ -231,7 +277,7 @@ roundTotal:2,
 
 minutes:10,
 
-scores:{m1a:0,m1b:0,m2a:0,m2b:0},
+scores:{m1a:0,m1b:0,m2a:0,m2b:0,m3a:0,m3b:0,m4a:0,m4b:0},
 
 points:{team1:0,team2:0},
 
@@ -244,6 +290,12 @@ timerDisplay:'00:00',
 timerFinished:false,
 
 setMatchTime(){
+this.timeLeft=this.minutes*60
+this.updateDisplay()
+},
+
+resetTimer(){
+this.timerFinished=false
 this.timeLeft=this.minutes*60
 this.updateDisplay()
 },
@@ -274,16 +326,28 @@ calcTendenz(){
 let t1=0
 let t2=0
 
-if(this.scores.m1a>this.scores.m1b)t1++
-else if(this.scores.m1a<this.scores.m1b)t2++
-else{t1++;t2++}
+const games=[
+['m1a','m1b'],
+['m2a','m2b'],
+['m3a','m3b'],
+['m4a','m4b']
+]
 
-if(this.scores.m2a>this.scores.m2b)t1++
-else if(this.scores.m2a<this.scores.m2b)t2++
+for(let i=0;i<this.fields;i++){
+let a=this.scores[games[i][0]]
+let b=this.scores[games[i][1]]
+
+if(a>b)t1++
+else if(a<b)t2++
 else{t1++;t2++}
+}
 
 this.points.team1+=t1
 this.points.team2+=t2
+},
+
+rotation(team,field){
+return this.round
 },
 
 nextRound(){
@@ -294,11 +358,12 @@ this.setMatchTime()
 },
 
 resetScores(){
-this.scores={m1a:0,m1b:0,m2a:0,m2b:0}
+this.scores={m1a:0,m1b:0,m2a:0,m2b:0,m3a:0,m3b:0,m4a:0,m4b:0}
 },
 
-inc(k){this.scores[k]++},
-dec(k){if(this.scores[k]>0)this.scores[k]--},
+inc(k){if(!this.timerFinished)this.scores[k]++},
+
+dec(k){if(!this.timerFinished && this.scores[k]>0)this.scores[k]--},
 
 next(){this.step++},
 prev(){if(this.step>0)this.step--},
