@@ -152,225 +152,117 @@
                     </div>
 
                     <!-- MATCHES -->
-                    <div class="grid xl:grid-cols-2 gap-10">
+                    <div x-show="fields" class="grid xl:grid-cols-2 gap-10">
 
                         <!-- HF1 -->
-                        <div class="matchCard" x-show="fields>=1">
+                        <div class="matchCard" x-show="fields >= 1">
                             <div class="matchHeader">HF1</div>
                             <div class="matchTeam">
-                                <!-- Team Links -->
-                                <div class="flex flex-col items-center gap-3">
-                                    <div class="font-semibold text-center" x-text="match1A"></div>
+                                <div class="flex flex-col items-center gap-2">
+                                    <div class="font-semibold" x-text="match1A"></div>
                                     <div class="flex gap-2">
                                         <button @click="dec('m1a')" class="miniBtn">−</button>
                                         <button @click="inc('m1a')" class="miniBtn">+</button>
                                     </div>
                                 </div>
 
-                                <!-- Score Mitte -->
                                 <div class="scoreCenter">
                                     <span x-text="twin.scores.m1a"></span>
                                     <span class="opacity-40 px-2">:</span>
                                     <span x-text="twin.scores.m1b"></span>
                                 </div>
 
-                                <!-- Team Rechts -->
-                                <div class="flex flex-col items-center gap-3">
-                                    <div class="font-semibold text-center" x-text="match1B"></div>
+                                <div class="flex flex-col items-center gap-2">
+                                    <div class="font-semibold" x-text="match1B"></div>
                                     <div class="flex gap-2">
                                         <button @click="dec('m1b')" class="miniBtn">−</button>
                                         <button @click="inc('m1b')" class="miniBtn">+</button>
                                     </div>
                                 </div>
-                            </div>
-                                    <div class="flex items-center gap-3">
-                                        <button @click="dec(keyLeft($el))" class="miniBtn">−</button>
-                                        <button @click="inc(keyLeft($el))" class="miniBtn">+</button>
-                                    </div>
-                                </div>
-
-                                <!-- Score Mitte -->
-                                <div class="scoreCenter">
-                                    <span x-text="scoreLeft($el)"></span>
-                                    <span class="opacity-40 px-2">:</span>
-                                    <span x-text="scoreRight($el)"></span>
-                                </div>
-
-                                <!-- Team Rechts -->
-                                <div class="flex flex-col items-center gap-3">
-                                    <div class="font-semibold text-center" x-text="$el.closest('.matchCard').querySelector('.matchHeader').innerText + ' – ' + (twin.round===1 ? twin.team2+' A' : twin.team2+' B')"></div>
-                                    <div class="flex items-center gap-3">
-                                        <button @click="dec(keyRight($el))" class="miniBtn">−</button>
-                                        <button @click="inc(keyRight($el))" class="miniBtn">+</button>
-                                    </div>
-                                </div>
-                            </div>
-                                <span x-text="match1B"></span>
                             </div>
                         </div>
 
                         <!-- HF2 -->
-                        <div class="matchCard" x-show="fields>=2">
+                        <div class="matchCard" x-show="fields >= 2">
                             <div class="matchHeader">HF2</div>
                             <div class="matchTeam">
-                                <!-- Team Links -->
-                                <div class="flex flex-col items-center gap-3">
-                                    <div class="font-semibold text-center" x-text="match1A"></div>
+                                <div class="flex flex-col items-center gap-2">
+                                    <div class="font-semibold" x-text="match2A"></div>
                                     <div class="flex gap-2">
-                                        <button @click="dec('m1a')" class="miniBtn">−</button>
-                                        <button @click="inc('m1a')" class="miniBtn">+</button>
+                                        <button @click="dec('m2a')" class="miniBtn">−</button>
+                                        <button @click="inc('m2a')" class="miniBtn">+</button>
                                     </div>
                                 </div>
 
-                                <!-- Score Mitte -->
                                 <div class="scoreCenter">
-                                    <span x-text="twin.scores.m1a"></span>
+                                    <span x-text="twin.scores.m2a"></span>
                                     <span class="opacity-40 px-2">:</span>
-                                    <span x-text="twin.scores.m1b"></span>
+                                    <span x-text="twin.scores.m2b"></span>
                                 </div>
 
-                                <!-- Team Rechts -->
-                                <div class="flex flex-col items-center gap-3">
-                                    <div class="font-semibold text-center" x-text="match1B"></div>
+                                <div class="flex flex-col items-center gap-2">
+                                    <div class="font-semibold" x-text="match2B"></div>
                                     <div class="flex gap-2">
-                                        <button @click="dec('m1b')" class="miniBtn">−</button>
-                                        <button @click="inc('m1b')" class="miniBtn">+</button>
+                                        <button @click="dec('m2b')" class="miniBtn">−</button>
+                                        <button @click="inc('m2b')" class="miniBtn">+</button>
                                     </div>
                                 </div>
-                            </div>
-                                    <div class="flex items-center gap-3">
-                                        <button @click="dec(keyLeft($el))" class="miniBtn">−</button>
-                                        <button @click="inc(keyLeft($el))" class="miniBtn">+</button>
-                                    </div>
-                                </div>
-
-                                <!-- Score Mitte -->
-                                <div class="scoreCenter">
-                                    <span x-text="scoreLeft($el)"></span>
-                                    <span class="opacity-40 px-2">:</span>
-                                    <span x-text="scoreRight($el)"></span>
-                                </div>
-
-                                <!-- Team Rechts -->
-                                <div class="flex flex-col items-center gap-3">
-                                    <div class="font-semibold text-center" x-text="$el.closest('.matchCard').querySelector('.matchHeader').innerText + ' – ' + (twin.round===1 ? twin.team2+' A' : twin.team2+' B')"></div>
-                                    <div class="flex items-center gap-3">
-                                        <button @click="dec(keyRight($el))" class="miniBtn">−</button>
-                                        <button @click="inc(keyRight($el))" class="miniBtn">+</button>
-                                    </div>
-                                </div>
-                            </div>
-                                <span x-text="match2B"></span>
                             </div>
                         </div>
 
                         <!-- NF1 -->
-                        <div class="matchCard" x-show="fields>=3">
+                        <div class="matchCard" x-show="fields >= 3">
                             <div class="matchHeader">NF1</div>
                             <div class="matchTeam">
-                                <!-- Team Links -->
-                                <div class="flex flex-col items-center gap-3">
-                                    <div class="font-semibold text-center" x-text="match1A"></div>
+                                <div class="flex flex-col items-center gap-2">
+                                    <div class="font-semibold" x-text="match1A"></div>
                                     <div class="flex gap-2">
-                                        <button @click="dec('m1a')" class="miniBtn">−</button>
-                                        <button @click="inc('m1a')" class="miniBtn">+</button>
+                                        <button @click="dec('m3a')" class="miniBtn">−</button>
+                                        <button @click="inc('m3a')" class="miniBtn">+</button>
                                     </div>
                                 </div>
 
-                                <!-- Score Mitte -->
                                 <div class="scoreCenter">
-                                    <span x-text="twin.scores.m1a"></span>
+                                    <span x-text="twin.scores.m3a"></span>
                                     <span class="opacity-40 px-2">:</span>
-                                    <span x-text="twin.scores.m1b"></span>
+                                    <span x-text="twin.scores.m3b"></span>
                                 </div>
 
-                                <!-- Team Rechts -->
-                                <div class="flex flex-col items-center gap-3">
-                                    <div class="font-semibold text-center" x-text="match1B"></div>
+                                <div class="flex flex-col items-center gap-2">
+                                    <div class="font-semibold" x-text="match1B"></div>
                                     <div class="flex gap-2">
-                                        <button @click="dec('m1b')" class="miniBtn">−</button>
-                                        <button @click="inc('m1b')" class="miniBtn">+</button>
+                                        <button @click="dec('m3b')" class="miniBtn">−</button>
+                                        <button @click="inc('m3b')" class="miniBtn">+</button>
                                     </div>
                                 </div>
-                            </div>
-                                    <div class="flex items-center gap-3">
-                                        <button @click="dec(keyLeft($el))" class="miniBtn">−</button>
-                                        <button @click="inc(keyLeft($el))" class="miniBtn">+</button>
-                                    </div>
-                                </div>
-
-                                <!-- Score Mitte -->
-                                <div class="scoreCenter">
-                                    <span x-text="scoreLeft($el)"></span>
-                                    <span class="opacity-40 px-2">:</span>
-                                    <span x-text="scoreRight($el)"></span>
-                                </div>
-
-                                <!-- Team Rechts -->
-                                <div class="flex flex-col items-center gap-3">
-                                    <div class="font-semibold text-center" x-text="$el.closest('.matchCard').querySelector('.matchHeader').innerText + ' – ' + (twin.round===1 ? twin.team2+' A' : twin.team2+' B')"></div>
-                                    <div class="flex items-center gap-3">
-                                        <button @click="dec(keyRight($el))" class="miniBtn">−</button>
-                                        <button @click="inc(keyRight($el))" class="miniBtn">+</button>
-                                    </div>
-                                </div>
-                            </div>
-                                <span x-text="match1B"></span>
                             </div>
                         </div>
 
                         <!-- NF2 -->
-                        <div class="matchCard" x-show="fields>=4">
+                        <div class="matchCard" x-show="fields >= 4">
                             <div class="matchHeader">NF2</div>
                             <div class="matchTeam">
-                                <!-- Team Links -->
-                                <div class="flex flex-col items-center gap-3">
-                                    <div class="font-semibold text-center" x-text="match1A"></div>
+                                <div class="flex flex-col items-center gap-2">
+                                    <div class="font-semibold" x-text="match2A"></div>
                                     <div class="flex gap-2">
-                                        <button @click="dec('m1a')" class="miniBtn">−</button>
-                                        <button @click="inc('m1a')" class="miniBtn">+</button>
+                                        <button @click="dec('m4a')" class="miniBtn">−</button>
+                                        <button @click="inc('m4a')" class="miniBtn">+</button>
                                     </div>
                                 </div>
 
-                                <!-- Score Mitte -->
                                 <div class="scoreCenter">
-                                    <span x-text="twin.scores.m1a"></span>
+                                    <span x-text="twin.scores.m4a"></span>
                                     <span class="opacity-40 px-2">:</span>
-                                    <span x-text="twin.scores.m1b"></span>
+                                    <span x-text="twin.scores.m4b"></span>
                                 </div>
 
-                                <!-- Team Rechts -->
-                                <div class="flex flex-col items-center gap-3">
-                                    <div class="font-semibold text-center" x-text="match1B"></div>
+                                <div class="flex flex-col items-center gap-2">
+                                    <div class="font-semibold" x-text="match2B"></div>
                                     <div class="flex gap-2">
-                                        <button @click="dec('m1b')" class="miniBtn">−</button>
-                                        <button @click="inc('m1b')" class="miniBtn">+</button>
+                                        <button @click="dec('m4b')" class="miniBtn">−</button>
+                                        <button @click="inc('m4b')" class="miniBtn">+</button>
                                     </div>
                                 </div>
-                            </div>
-                                    <div class="flex items-center gap-3">
-                                        <button @click="dec(keyLeft($el))" class="miniBtn">−</button>
-                                        <button @click="inc(keyLeft($el))" class="miniBtn">+</button>
-                                    </div>
-                                </div>
-
-                                <!-- Score Mitte -->
-                                <div class="scoreCenter">
-                                    <span x-text="scoreLeft($el)"></span>
-                                    <span class="opacity-40 px-2">:</span>
-                                    <span x-text="scoreRight($el)"></span>
-                                </div>
-
-                                <!-- Team Rechts -->
-                                <div class="flex flex-col items-center gap-3">
-                                    <div class="font-semibold text-center" x-text="$el.closest('.matchCard').querySelector('.matchHeader').innerText + ' – ' + (twin.round===1 ? twin.team2+' A' : twin.team2+' B')"></div>
-                                    <div class="flex items-center gap-3">
-                                        <button @click="dec(keyRight($el))" class="miniBtn">−</button>
-                                        <button @click="inc(keyRight($el))" class="miniBtn">+</button>
-                                    </div>
-                                </div>
-                            </div>
-                                <span x-text="match2B"></span>
                             </div>
                         </div>
 
