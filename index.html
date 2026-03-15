@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NFV Twin Scoreboard</title>
+<title>NFV Scoreboard</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -55,11 +55,39 @@ Reset
 
 </div>
 
-<!-- SETUP -->
+<!-- MODUS AUSWAHL -->
 
 <div x-show="step===0 && isMaster" class="bg-white p-8 rounded-2xl shadow">
 
-<h2 class="text-2xl font-bold mb-4">Teams</h2>
+<h2 class="text-2xl font-bold mb-6">Spielmodus wählen</h2>
+
+<div class="grid grid-cols-2 gap-6">
+
+<button
+@click="mode='single';next()"
+class="p-10 bg-blue-600 text-white rounded-xl text-2xl font-bold">
+
+Single
+
+</button>
+
+<button
+@click="mode='twin';next()"
+class="p-10 bg-indigo-600 text-white rounded-xl text-2xl font-bold">
+
+Twin
+
+</button>
+
+</div>
+
+</div>
+
+<!-- TEAM EINGABE -->
+
+<div x-show="step===1 && isMaster" class="bg-white p-8 rounded-2xl shadow">
+
+<h2 class="text-2xl font-bold mb-4">Teams eingeben</h2>
 
 <div class="grid grid-cols-2 gap-4">
 
@@ -68,7 +96,30 @@ Reset
 
 </div>
 
-<h2 class="text-xl mt-6 mb-3">Spielfelder</h2>
+<div class="flex justify-between mt-6">
+
+<button @click="prev()" class="px-6 py-2 bg-gray-400 text-white rounded">
+Zurück
+</button>
+
+<button
+@click="next()"
+:disabled="!team1 || !team2"
+class="px-6 py-2 bg-indigo-600 text-white rounded">
+
+Weiter
+
+</button>
+
+</div>
+
+</div>
+
+<!-- FELDER -->
+
+<div x-show="step===2 && isMaster && mode==='twin'" class="bg-white p-8 rounded-2xl shadow">
+
+<h2 class="text-2xl font-bold mb-4">Spielfelder wählen</h2>
 
 <div class="flex gap-3">
 
@@ -78,14 +129,47 @@ Reset
 
 </div>
 
-<button
-@click="createSession()"
-:disabled="!team1 || !team2 || !fields"
-class="mt-6 px-6 py-2 bg-green-600 text-white rounded">
+<div class="flex justify-between mt-6">
 
-QR erzeugen
+<button @click="prev()" class="px-6 py-2 bg-gray-400 text-white rounded">
+Zurück
+</button>
+
+<button
+@click="next()"
+:disabled="!fields"
+class="px-6 py-2 bg-indigo-600 text-white rounded">
+
+Weiter
 
 </button>
+
+</div>
+
+</div>
+
+<!-- ZEIT EINSTELLEN -->
+
+<div x-show="step===3 && isMaster" class="bg-white p-8 rounded-2xl shadow">
+
+<h2 class="text-2xl font-bold mb-4">Zeit einstellen (Minuten)</h2>
+
+<input
+type="number"
+x-model.number="minutes"
+class="border p-3 rounded w-40 text-xl">
+
+<div class="flex justify-between mt-6">
+
+<button @click="prev()" class="px-6 py-2 bg-gray-400 text-white rounded">
+Zurück
+</button>
+
+<button @click="createSession()" class="px-6 py-2 bg-green-600 text-white rounded">
+QR erzeugen
+</button>
+
+</div>
 
 </div>
 
@@ -103,23 +187,21 @@ QR erzeugen
 @click="step=5"
 class="mt-6 px-6 py-2 bg-indigo-600 text-white rounded">
 
-Weiter zu Begegnung 1
+Spiel starten
 
 </button>
 
 </div>
 
-<!-- MATCHES -->
+<!-- SPIELE -->
 
 <div x-show="step===5" class="space-y-6">
 
 <h2 class="text-2xl font-bold">
-
 Begegnung <span x-text="round"></span>
-
 </h2>
 
-<template x-for="f in fieldList" :key="f.name">
+<template x-for="f in fieldList">
 
 <div class="bg-white p-6 rounded-2xl shadow">
 
@@ -172,7 +254,7 @@ Nächste Begegnung
 
 </div>
 
-<!-- FIREBASE MODULE -->
+<!-- FIREBASE -->
 
 <script type="module">
 
@@ -180,7 +262,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/fireba
 import { getDatabase, ref, set, update, onValue } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js";
 
 const firebaseConfig = {
-
 apiKey: "AIzaSyDwj4kaT6VFJgrPg457Cq8AVrcG6jQTRl0",
 authDomain: "nfv-scoreboard.firebaseapp.com",
 databaseURL:"https://nfv-scoreboard-default-rtdb.europe-west1.firebasedatabase.app",
@@ -188,21 +269,18 @@ projectId: "nfv-scoreboard",
 storageBucket: "nfv-scoreboard.firebasestorage.app",
 messagingSenderId: "727289331208",
 appId: "1:727289331208:web:c8eb60c188eeb62a6ddbbd"
-
 };
 
-const appFirebase = initializeApp(firebaseConfig);
-const db = getDatabase(appFirebase);
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getDatabase(firebaseApp);
 
-window.firebaseDB = db
-window.firebaseRef = ref
-window.firebaseSet = set
-window.firebaseUpdate = update
-window.firebaseOnValue = onValue
+window.db=db
+window.dbRef=ref
+window.dbSet=set
+window.dbUpdate=update
+window.dbOnValue=onValue
 
 </script>
-
-<!-- ALPINE APP -->
 
 <script>
 
@@ -210,21 +288,26 @@ function app(){
 
 return{
 
+mode:null,
 isMaster:true,
-sessionId:null,
-showQR:false,
+
 step:0,
 
 team1:"",
 team2:"",
 fields:0,
+
 round:1,
+
+sessionId:null,
+showQR:false,
+
+minutes:10,
 
 scores:{m1a:0,m1b:0,m2a:0,m2b:0,m3a:0,m3b:0,m4a:0,m4b:0},
 
 points:{team1:0,team2:0},
 
-minutes:10,
 timeLeft:0,
 timer:null,
 timerDisplay:"00:00",
@@ -248,6 +331,9 @@ this.resetTimer()
 
 },
 
+next(){this.step++},
+prev(){if(this.step>0)this.step--},
+
 createSession(){
 
 this.sessionId=Math.random().toString(36).substring(2,8)
@@ -258,20 +344,18 @@ QRCode.toCanvas(document.getElementById("qr"),url)
 
 this.showQR=true
 
-firebaseSet(firebaseRef(firebaseDB,"games/"+this.sessionId),{
-
+dbSet(dbRef(db,"games/"+this.sessionId),{
 scores:this.scores,
 round:this.round,
 points:this.points,
 timer:this.timeLeft
-
 })
 
 },
 
 listen(){
 
-firebaseOnValue(firebaseRef(firebaseDB,"games/"+this.sessionId),(snap)=>{
+dbOnValue(dbRef(db,"games/"+this.sessionId),(snap)=>{
 
 const d=snap.val()
 if(!d)return
@@ -283,26 +367,6 @@ this.timeLeft=d.timer
 
 this.updateDisplay()
 
-})
-
-},
-
-pushScores(){
-
-if(!this.isMaster)return
-
-firebaseUpdate(firebaseRef(firebaseDB,"games/"+this.sessionId),{
-scores:this.scores
-})
-
-},
-
-pushTimer(){
-
-if(!this.isMaster)return
-
-firebaseUpdate(firebaseRef(firebaseDB,"games/"+this.sessionId),{
-timer:this.timeLeft
 })
 
 },
@@ -319,7 +383,6 @@ testTimer(){
 
 this.timeLeft=10
 this.updateDisplay()
-this.pushTimer()
 
 },
 
@@ -339,25 +402,17 @@ if(this.timeLeft>0){
 
 this.timeLeft--
 this.updateDisplay()
-this.pushTimer()
 
 }else{
 
 clearInterval(this.timer)
 this.timer=null
 this.timerFinished=true
-this.playHorn()
-this.calcTendenz()
+new Audio("https://actions.google.com/sounds/v1/alarms/buzzer.ogg").play()
 
 }
 
 },1000)
-
-},
-
-playHorn(){
-
-new Audio("https://actions.google.com/sounds/v1/alarms/buzzer.ogg").play()
 
 },
 
@@ -366,72 +421,14 @@ updateDisplay(){
 let m=Math.floor(this.timeLeft/60)
 let s=this.timeLeft%60
 
-this.timerDisplay =
+this.timerDisplay=
 m.toString().padStart(2,"0")+":"+
 s.toString().padStart(2,"0")
 
 },
 
-calcTendenz(){
-
-let t1=0
-let t2=0
-
-const g=[["m1a","m1b"],["m2a","m2b"],["m3a","m3b"],["m4a","m4b"]]
-
-for(let i=0;i<this.fields;i++){
-
-let a=this.scores[g[i][0]]
-let b=this.scores[g[i][1]]
-
-if(a>b)t1++
-else if(a<b)t2++
-else{t1++;t2++}
-
-}
-
-this.points.team1+=t1
-this.points.team2+=t2
-
-firebaseUpdate(firebaseRef(firebaseDB,"games/"+this.sessionId),{
-points:this.points
-})
-
-},
-
-nextRound(){
-
-this.round++
-this.resetScores()
-
-firebaseUpdate(firebaseRef(firebaseDB,"games/"+this.sessionId),{
-round:this.round
-})
-
-},
-
-resetScores(){
-
-this.scores={m1a:0,m1b:0,m2a:0,m2b:0,m3a:0,m3b:0,m4a:0,m4b:0}
-this.pushScores()
-
-},
-
-inc(k){
-
-if(this.timerFinished)return
-this.scores[k]++
-this.pushScores()
-
-},
-
-dec(k){
-
-if(this.timerFinished)return
-if(this.scores[k]>0)this.scores[k]--
-this.pushScores()
-
-},
+inc(k){if(!this.timerFinished)this.scores[k]++},
+dec(k){if(!this.timerFinished && this.scores[k]>0)this.scores[k]--},
 
 btnField(n){
 
