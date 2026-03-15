@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NFV Twin Scoreboard LIVE</title>
+<title>NFV Twin Scoreboard</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -15,7 +15,8 @@
 
 <div x-data="app()" x-init="init()" class="max-w-6xl mx-auto space-y-8">
 
-<!-- HEADER -->
+<!-- TIMER BAR -->
+
 <div class="bg-slate-900 text-white p-6 rounded-2xl flex justify-between items-center">
 
 <div>
@@ -37,57 +38,85 @@ x-text="timerDisplay"></div>
 </div>
 
 <div class="flex gap-3" x-show="isMaster">
-<button @click="testTimer()" class="px-4 py-2 bg-purple-500 rounded-xl">Test 10s</button>
-<button @click="startPauseTimer()" class="px-6 py-2 bg-green-500 rounded-xl">Start / Pause</button>
-<button @click="resetTimer()" class="px-6 py-2 bg-yellow-500 rounded-xl">Reset</button>
-</div>
 
-</div>
-
-<!-- QR SCREEN -->
-<div x-show="showQR && isMaster" class="bg-white p-8 rounded-2xl shadow text-center">
-<h2 class="text-2xl font-bold mb-4">Torzähler verbinden</h2>
-<canvas id="qr"></canvas>
-<div class="mt-4">Session: <b x-text="sessionId"></b></div>
-
-<button @click="step=5"
-class="mt-6 px-6 py-2 bg-indigo-600 text-white rounded">
-Weiter zu Begegnung 1
+<button @click="testTimer()" class="px-4 py-2 bg-purple-500 rounded-xl">
+Test 10s
 </button>
+
+<button @click="startPauseTimer()" class="px-6 py-2 bg-green-500 rounded-xl">
+Start / Pause
+</button>
+
+<button @click="resetTimer()" class="px-6 py-2 bg-yellow-500 rounded-xl">
+Reset
+</button>
+
+</div>
+
 </div>
 
 <!-- SETUP -->
+
 <div x-show="step===0 && isMaster" class="bg-white p-8 rounded-2xl shadow">
 
 <h2 class="text-2xl font-bold mb-4">Teams</h2>
 
 <div class="grid grid-cols-2 gap-4">
+
 <input x-model="team1" placeholder="Team A" class="border p-2 rounded">
 <input x-model="team2" placeholder="Team B" class="border p-2 rounded">
+
 </div>
 
 <h2 class="text-xl mt-6 mb-3">Spielfelder</h2>
 
 <div class="flex gap-3">
+
 <button @click="fields=2" :class="btnField(2)">HF1+HF2</button>
 <button @click="fields=3" :class="btnField(3)">HF1+HF2+NF1</button>
 <button @click="fields=4" :class="btnField(4)">HF1+HF2+NF1+NF2</button>
+
 </div>
 
 <button
 @click="createSession()"
 :disabled="!team1 || !team2 || !fields"
 class="mt-6 px-6 py-2 bg-green-600 text-white rounded">
+
 QR erzeugen
+
 </button>
 
 </div>
 
-<!-- MATCH VIEW -->
+<!-- QR SCREEN -->
+
+<div x-show="showQR && isMaster" class="bg-white p-8 rounded-2xl shadow text-center">
+
+<h2 class="text-2xl font-bold mb-4">Torzähler verbinden</h2>
+
+<canvas id="qr"></canvas>
+
+<div class="mt-4">Session: <b x-text="sessionId"></b></div>
+
+<button
+@click="step=5"
+class="mt-6 px-6 py-2 bg-indigo-600 text-white rounded">
+
+Weiter zu Begegnung 1
+
+</button>
+
+</div>
+
+<!-- MATCHES -->
+
 <div x-show="step===5" class="space-y-6">
 
 <h2 class="text-2xl font-bold">
+
 Begegnung <span x-text="round"></span>
+
 </h2>
 
 <template x-for="f in fieldList" :key="f.name">
@@ -96,26 +125,32 @@ Begegnung <span x-text="round"></span>
 
 <h3 class="font-bold mb-2" x-text="f.name"></h3>
 
-<div class="grid grid-cols-3 items-center text-center">
+<div class="grid grid-cols-3 text-center items-center">
 
 <div>
+
 <div x-text="team1 + ' ' + f.a"></div>
 
 <button @click="dec(f.keyA)" :disabled="timerFinished">-</button>
 <button @click="inc(f.keyA)" :disabled="timerFinished">+</button>
+
 </div>
 
 <div class="text-3xl font-bold">
+
 <span x-text="scores[f.keyA]"></span>
 :
 <span x-text="scores[f.keyB]"></span>
+
 </div>
 
 <div>
+
 <div x-text="team2 + ' ' + f.b"></div>
 
 <button @click="dec(f.keyB)" :disabled="timerFinished">-</button>
 <button @click="inc(f.keyB)" :disabled="timerFinished">+</button>
+
 </div>
 
 </div>
@@ -125,15 +160,19 @@ Begegnung <span x-text="round"></span>
 </template>
 
 <button
-x-show="isMaster && timerFinished"
+x-show="timerFinished && isMaster"
 @click="nextRound()"
 class="px-6 py-2 bg-indigo-600 text-white rounded">
+
 Nächste Begegnung
+
 </button>
 
 </div>
 
 </div>
+
+<!-- FIREBASE MODULE -->
 
 <script type="module">
 
@@ -141,6 +180,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/fireba
 import { getDatabase, ref, set, update, onValue } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js";
 
 const firebaseConfig = {
+
 apiKey: "AIzaSyDwj4kaT6VFJgrPg457Cq8AVrcG6jQTRl0",
 authDomain: "nfv-scoreboard.firebaseapp.com",
 databaseURL:"https://nfv-scoreboard-default-rtdb.europe-west1.firebasedatabase.app",
@@ -148,12 +188,25 @@ projectId: "nfv-scoreboard",
 storageBucket: "nfv-scoreboard.firebasestorage.app",
 messagingSenderId: "727289331208",
 appId: "1:727289331208:web:c8eb60c188eeb62a6ddbbd"
+
 };
 
-const firebaseApp = initializeApp(firebaseConfig);
-const db = getDatabase(firebaseApp);
+const appFirebase = initializeApp(firebaseConfig);
+const db = getDatabase(appFirebase);
 
-window.app = function(){
+window.firebaseDB = db
+window.firebaseRef = ref
+window.firebaseSet = set
+window.firebaseUpdate = update
+window.firebaseOnValue = onValue
+
+</script>
+
+<!-- ALPINE APP -->
+
+<script>
+
+function app(){
 
 return{
 
@@ -205,7 +258,7 @@ QRCode.toCanvas(document.getElementById("qr"),url)
 
 this.showQR=true
 
-set(ref(db,"games/"+this.sessionId),{
+firebaseSet(firebaseRef(firebaseDB,"games/"+this.sessionId),{
 
 scores:this.scores,
 round:this.round,
@@ -218,7 +271,7 @@ timer:this.timeLeft
 
 listen(){
 
-onValue(ref(db,"games/"+this.sessionId),(snap)=>{
+firebaseOnValue(firebaseRef(firebaseDB,"games/"+this.sessionId),(snap)=>{
 
 const d=snap.val()
 if(!d)return
@@ -238,7 +291,7 @@ pushScores(){
 
 if(!this.isMaster)return
 
-update(ref(db,"games/"+this.sessionId),{
+firebaseUpdate(firebaseRef(firebaseDB,"games/"+this.sessionId),{
 scores:this.scores
 })
 
@@ -248,7 +301,7 @@ pushTimer(){
 
 if(!this.isMaster)return
 
-update(ref(db,"games/"+this.sessionId),{
+firebaseUpdate(firebaseRef(firebaseDB,"games/"+this.sessionId),{
 timer:this.timeLeft
 })
 
@@ -304,8 +357,7 @@ this.calcTendenz()
 
 playHorn(){
 
-const audio=new Audio("https://actions.google.com/sounds/v1/alarms/buzzer.ogg")
-audio.play()
+new Audio("https://actions.google.com/sounds/v1/alarms/buzzer.ogg").play()
 
 },
 
@@ -315,7 +367,7 @@ let m=Math.floor(this.timeLeft/60)
 let s=this.timeLeft%60
 
 this.timerDisplay =
-m.toString().padStart(2,"0") + ":" +
+m.toString().padStart(2,"0")+":"+
 s.toString().padStart(2,"0")
 
 },
@@ -332,16 +384,16 @@ for(let i=0;i<this.fields;i++){
 let a=this.scores[g[i][0]]
 let b=this.scores[g[i][1]]
 
-if(a>b) t1++
-else if(a<b) t2++
-else {t1++;t2++}
+if(a>b)t1++
+else if(a<b)t2++
+else{t1++;t2++}
 
 }
 
 this.points.team1+=t1
 this.points.team2+=t2
 
-update(ref(db,"games/"+this.sessionId),{
+firebaseUpdate(firebaseRef(firebaseDB,"games/"+this.sessionId),{
 points:this.points
 })
 
@@ -352,7 +404,7 @@ nextRound(){
 this.round++
 this.resetScores()
 
-update(ref(db,"games/"+this.sessionId),{
+firebaseUpdate(firebaseRef(firebaseDB,"games/"+this.sessionId),{
 round:this.round
 })
 
@@ -383,8 +435,8 @@ this.pushScores()
 
 btnField(n){
 
-return "px-3 py-1 rounded " +
-(this.fields===n ? "bg-indigo-600 text-white" : "bg-gray-200")
+return "px-3 py-1 rounded "+
+(this.fields===n ? "bg-indigo-600 text-white":"bg-gray-200")
 
 },
 
