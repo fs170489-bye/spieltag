@@ -95,39 +95,8 @@ Zurück
 </button>
 
 <button
-@click="mode==='single' ? startGame() : next()"
-:disabled="!team1 || !team2"
-class="px-6 py-2 bg-indigo-600 text-white rounded">
-Weiter
-</button>
-
-</div>
-
-</div>
-
-<!-- FELDER -->
-
-<div x-show="step===2 && mode==='twin'" class="bg-white p-8 rounded-2xl shadow">
-
-<h2 class="text-2xl font-bold mb-4">Spielfelder wählen</h2>
-
-<div class="flex gap-4">
-
-<button @click="fields=2" :class="fieldBtn(2)">HF1 + HF2</button>
-<button @click="fields=3" :class="fieldBtn(3)">HF1 + HF2 + NF1</button>
-<button @click="fields=4" :class="fieldBtn(4)">HF1 + HF2 + NF1 + NF2</button>
-
-</div>
-
-<div class="flex justify-between mt-6">
-
-<button @click="prev()" class="px-6 py-2 bg-gray-500 text-white rounded">
-Zurück
-</button>
-
-<button
 @click="next()"
-:disabled="fields===0"
+:disabled="!team1 || !team2"
 class="px-6 py-2 bg-indigo-600 text-white rounded">
 Weiter
 </button>
@@ -138,7 +107,7 @@ Weiter
 
 <!-- ZEIT -->
 
-<div x-show="step===3" class="bg-white p-8 rounded-2xl shadow">
+<div x-show="step===2" class="bg-white p-8 rounded-2xl shadow">
 
 <h2 class="text-2xl font-bold mb-4">Zeit einstellen (Minuten)</h2>
 
@@ -153,7 +122,37 @@ class="border p-3 rounded w-40 text-xl">
 Zurück
 </button>
 
-<button @click="startGame()" class="px-6 py-2 bg-green-600 text-white rounded">
+<button @click="next()" class="px-6 py-2 bg-indigo-600 text-white rounded">
+Weiter
+</button>
+
+</div>
+
+</div>
+
+<!-- FELDER -->
+
+<div x-show="step===3" class="bg-white p-8 rounded-2xl shadow">
+
+<h2 class="text-2xl font-bold mb-4">Spielfelder wählen</h2>
+
+<div class="flex gap-4">
+
+<button @click="fields=1" :class="fieldBtn(1)">HF</button>
+<button @click="fields=2" :class="fieldBtn(2)">HF + NF</button>
+
+</div>
+
+<div class="flex justify-between mt-6">
+
+<button @click="prev()" class="px-6 py-2 bg-gray-500 text-white rounded">
+Zurück
+</button>
+
+<button
+@click="startGame()"
+:disabled="fields===0"
+class="px-6 py-2 bg-green-600 text-white rounded">
 Spiel starten
 </button>
 
@@ -169,13 +168,6 @@ Spiel starten
 Begegnung <span x-text="round"></span> / 3
 </h2>
 
-<div x-show="round===3"
-class="bg-yellow-200 text-yellow-900 p-4 rounded-xl font-semibold text-center">
-
-⚠️ 2–4 Spieler tauschen
-
-</div>
-
 <template x-for="f in fieldList">
 
 <div class="bg-white p-6 rounded-2xl shadow">
@@ -186,7 +178,7 @@ class="bg-yellow-200 text-yellow-900 p-4 rounded-xl font-semibold text-center">
 
 <div>
 
-<div class="text-lg font-semibold mb-2" x-text="team1 + ' ' + f.a"></div>
+<div class="text-lg font-semibold mb-2" x-text="team1"></div>
 
 <button @click="dec(f.keyA)" :disabled="timeLeft===0"
 class="w-20 h-20 text-4xl bg-red-500 text-white rounded-xl">−</button>
@@ -205,7 +197,7 @@ class="w-20 h-20 text-4xl bg-green-600 text-white rounded-xl">+</button>
 
 <div>
 
-<div class="text-lg font-semibold mb-2" x-text="team2 + ' ' + f.b"></div>
+<div class="text-lg font-semibold mb-2" x-text="team2"></div>
 
 <button @click="dec(f.keyB)" :disabled="timeLeft===0"
 class="w-20 h-20 text-4xl bg-red-500 text-white rounded-xl">−</button>
@@ -223,22 +215,44 @@ class="w-20 h-20 text-4xl bg-green-600 text-white rounded-xl">+</button>
 
 <div class="flex justify-between mt-6">
 
-<button @click="prevRound()" :disabled="round===1"
-class="px-6 py-3 bg-gray-500 text-white rounded">
+<button @click="prevRound()" class="px-6 py-3 bg-gray-500 text-white rounded">
 ← Zurück
 </button>
 
-<button @click="nextRound()" :disabled="round===3"
-class="px-6 py-3 bg-indigo-600 text-white rounded">
-Weiter →
+<button @click="nextRound()" class="px-6 py-3 bg-indigo-600 text-white rounded"
+x-text="round===3 ? 'Endergebnis' : 'Weiter →'">
 </button>
 
 </div>
 
 </div>
 
+<!-- ENDERGEBNIS -->
+
+<div x-show="step===5" class="bg-white p-8 rounded-2xl shadow text-center">
+
+<h2 class="text-3xl font-bold mb-6">Endergebnis</h2>
+
+<div class="text-4xl font-bold">
+
+<span x-text="team1"></span>
+<span class="mx-4" x-text="pointsA"></span>
+:
+<span class="mx-4" x-text="pointsB"></span>
+<span x-text="team2"></span>
+
 </div>
 
+<button @click="resetAll()"
+class="mt-6 px-6 py-3 bg-indigo-600 text-white rounded">
+
+Neues Spiel
+
+</button>
+
+</div>
+
+</div>
 
 <script>
 
@@ -251,17 +265,13 @@ step:0,
 
 team1:"",
 team2:"",
+
 fields:0,
 
 round:1,
 minutes:10,
 
-scores:{
-m1a:0,m1b:0,
-m2a:0,m2b:0,
-m3a:0,m3b:0,
-m4a:0,m4b:0
-},
+scores:{m1a:0,m1b:0,m2a:0,m2b:0},
 
 pointsA:0,
 pointsB:0,
@@ -271,33 +281,104 @@ timer:null,
 timerDisplay:"00:00",
 
 init(){
-this.resetTimer()
-},
 
-next(){ this.step++ },
+const saved = localStorage.getItem("nfv_scoreboard_state")
 
-prev(){
-
-if(this.mode==="single" && this.step===4){
-this.step=1
-return
+if(saved){
+Object.assign(this, JSON.parse(saved))
 }
 
-if(this.step>0) this.step--
+this.updateDisplay()
 
 },
+
+saveState(){
+
+localStorage.setItem("nfv_scoreboard_state", JSON.stringify({
+
+mode:this.mode,
+step:this.step,
+team1:this.team1,
+team2:this.team2,
+fields:this.fields,
+round:this.round,
+minutes:this.minutes,
+scores:this.scores,
+pointsA:this.pointsA,
+pointsB:this.pointsB,
+timeLeft:this.timeLeft
+
+}))
+
+},
+
+next(){this.step++;this.saveState()},
+
+prev(){if(this.step>0)this.step--;this.saveState()},
 
 startGame(){
 
 this.timeLeft=this.minutes*60
 this.updateDisplay()
 this.step=4
+this.saveState()
+
+},
+
+nextRound(){
+
+this.calculateTendenz()
+
+if(this.round<3){
+
+this.round++
+this.resetScores()
+
+}else{
+
+this.step=5
+
+}
+
+this.saveState()
+
+},
+
+prevRound(){
+
+if(this.round>1){
+this.round--
+}else{
+this.step=3
+}
+
+this.saveState()
+
+},
+
+calculateTendenz(){
+
+let hf1a=this.scores.m1a
+let hf1b=this.scores.m1b
+
+if(hf1a>hf1b) this.pointsA++
+else if(hf1b>hf1a) this.pointsB++
+else {this.pointsA++;this.pointsB++;}
+
+},
+
+resetScores(){
+
+this.scores={m1a:0,m1b:0,m2a:0,m2b:0}
 
 },
 
 testTimer(){
+
 this.timeLeft=10
 this.updateDisplay()
+this.saveState()
+
 },
 
 startPauseTimer(){
@@ -314,13 +395,12 @@ if(this.timeLeft>0){
 
 this.timeLeft--
 this.updateDisplay()
+this.saveState()
 
 }else{
 
 clearInterval(this.timer)
 this.timer=null
-new Audio("https://actions.google.com/sounds/v1/alarms/buzzer.ogg").play()
-this.calculateTendenz()
 
 }
 
@@ -331,6 +411,7 @@ this.calculateTendenz()
 resetTimer(){
 this.timeLeft=this.minutes*60
 this.updateDisplay()
+this.saveState()
 },
 
 updateDisplay(){
@@ -345,65 +426,15 @@ s.toString().padStart(2,"0")
 },
 
 inc(k){
-if(this.timeLeft===0) return
+if(this.timeLeft===0)return
 this.scores[k]++
+this.saveState()
 },
 
 dec(k){
-if(this.timeLeft===0) return
-if(this.scores[k]>0) this.scores[k]--
-},
-
-calculateTendenz(){
-
-let a=0
-let b=0
-
-let hf1a=this.scores.m1a
-let hf1b=this.scores.m1b
-
-let hf2a=this.scores.m2a
-let hf2b=this.scores.m2b
-
-if(hf1a>hf1b) a++
-else if(hf1b>hf1a) b++
-else {a++;b++;}
-
-if(hf2a>hf2b) a++
-else if(hf2b>hf2a) b++
-else {a++;b++;}
-
-this.pointsA+=a
-this.pointsB+=b
-
-},
-
-nextRound(){
-
-this.calculateTendenz()
-
-if(this.round<3){
-this.round++
-this.resetScores()
-}
-
-},
-
-prevRound(){
-if(this.round>1){
-this.round--
-}
-},
-
-resetScores(){
-
-this.scores={
-m1a:0,m1b:0,
-m2a:0,m2b:0,
-m3a:0,m3b:0,
-m4a:0,m4b:0
-}
-
+if(this.timeLeft===0)return
+if(this.scores[k]>0)this.scores[k]--
+this.saveState()
 },
 
 fieldBtn(n){
@@ -413,40 +444,21 @@ return "px-5 py-3 rounded text-white "+
 
 get fieldList(){
 
-let hf1
-let hf2
+let arr=[{name:"HF1",keyA:"m1a",keyB:"m1b"}]
 
-if(this.round===1){
-hf1={a:1,b:1}
-hf2={a:2,b:2}
-}
-
-if(this.round===2){
-hf1={a:1,b:2}
-hf2={a:2,b:1}
-}
-
-if(this.round===3){
-hf1={a:1,b:1}
-hf2={a:2,b:2}
-}
-
-let arr=[
-
-{name:"HF1",a:hf1.a,b:hf1.b,keyA:"m1a",keyB:"m1b"},
-{name:"HF2",a:hf2.a,b:hf2.b,keyA:"m2a",keyB:"m2b"}
-
-]
-
-if(this.fields>=3){
-arr.push({name:"NF1",a:3,b:3,keyA:"m3a",keyB:"m3b"})
-}
-
-if(this.fields===4){
-arr.push({name:"NF2",a:4,b:4,keyA:"m4a",keyB:"m4b"})
+if(this.fields===2){
+arr.push({name:"NF",keyA:"m2a",keyB:"m2b"})
 }
 
 return arr
+
+},
+
+resetAll(){
+
+localStorage.removeItem("nfv_scoreboard_state")
+
+location.reload()
 
 }
 
