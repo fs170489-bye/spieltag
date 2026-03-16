@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -9,7 +10,6 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-<!-- FIREBASE -->
 
 <script type="module">
 
@@ -29,10 +29,10 @@ const firebaseConfig = {
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getDatabase(firebaseApp);
 
-window.db = db;
-window.dbRef = ref;
-window.dbSet = set;
-window.dbOnValue = onValue;
+window.db=db
+window.dbRef=ref
+window.dbSet=set
+window.dbOnValue=onValue
 
 </script>
 
@@ -112,7 +112,7 @@ Twin
 </div>
 
 
-<!-- TEAMS -->
+<!-- TEAM INPUT -->
 
 <div x-show="step===1" class="bg-white p-8 rounded-2xl shadow">
 
@@ -147,7 +147,7 @@ Weiter
 
 <div x-show="step===2" class="bg-white p-8 rounded-2xl shadow">
 
-<h2 class="text-2xl font-bold mb-4">Zeit einstellen (Minuten)</h2>
+<h2 class="text-2xl font-bold mb-4">Zeit einstellen</h2>
 
 <input type="number" x-model.number="minutes"
 class="border p-3 rounded w-40 text-xl">
@@ -167,16 +167,21 @@ Weiter
 </div>
 
 
-<!-- FELDER SINGLE -->
+<!-- FELDER -->
 
-<div x-show="step===3 && mode==='single'" class="bg-white p-8 rounded-2xl shadow">
+<div x-show="step===3" class="bg-white p-8 rounded-2xl shadow">
 
 <h2 class="text-2xl font-bold mb-4">Spielfeld wählen</h2>
 
 <div class="flex gap-4">
 
 <button @click="fields=1" :class="fieldBtn(1)">HF</button>
+
 <button @click="fields=2" :class="fieldBtn(2)">HF + NF</button>
+
+<button x-show="mode==='twin'" @click="fields=3" :class="fieldBtn(3)">HF + NF1</button>
+
+<button x-show="mode==='twin'" @click="fields=4" :class="fieldBtn(4)">HF + NF1 + NF2</button>
 
 </div>
 
@@ -268,6 +273,34 @@ x-text="round===3 ? 'Endergebnis' : 'Weiter →'">
 </div>
 
 
+<!-- ENDERGEBNIS -->
+
+<div x-show="step===5" class="bg-white p-8 rounded-2xl shadow text-center">
+
+<h2 class="text-3xl font-bold mb-6">Endergebnis</h2>
+
+<div class="text-4xl font-bold">
+
+<span x-text="team1"></span>
+
+<span class="mx-4" x-text="pointsA"></span>
+
+:
+
+<span class="mx-4" x-text="pointsB"></span>
+
+<span x-text="team2"></span>
+
+</div>
+
+<button @click="resetAll()"
+class="mt-6 px-6 py-3 bg-indigo-600 text-white rounded">
+Neues Spiel
+</button>
+
+</div>
+
+
 </div>
 
 
@@ -344,14 +377,28 @@ next(){this.step++},
 
 prev(){if(this.step>0)this.step--},
 
+prevRound(){
+
+if(this.round>1){
+
+this.round--
+
+this.resetScores()
+
+}else{
+
+this.step=3
+
+}
+
+},
+
 startGame(){
 
 this.timeLeft=this.minutes*60
 this.updateDisplay()
 
 this.step=4
-
-this.syncFirebase()
 
 },
 
@@ -362,7 +409,6 @@ this.calculateTendenz()
 if(this.round<3){
 
 this.round++
-
 this.resetScores()
 
 }else{
@@ -371,8 +417,6 @@ this.step=5
 
 }
 
-this.syncFirebase()
-
 },
 
 calculateTendenz(){
@@ -380,14 +424,14 @@ calculateTendenz(){
 let a1=this.scores.m1a
 let b1=this.scores.m1b
 
-let a2=this.scores.m2a
-let b2=this.scores.m2b
-
 if(a1>b1)this.pointsA++
 else if(b1>a1)this.pointsB++
 else{this.pointsA++;this.pointsB++;}
 
 if(this.mode==="twin"){
+
+let a2=this.scores.m2a
+let b2=this.scores.m2b
 
 if(a2>b2)this.pointsA++
 else if(b2>a2)this.pointsB++
@@ -400,6 +444,12 @@ else{this.pointsA++;this.pointsB++;}
 resetScores(){
 
 this.scores={m1a:0,m1b:0,m2a:0,m2b:0,m3a:0,m3b:0,m4a:0,m4b:0}
+
+},
+
+resetAll(){
+
+location.reload()
 
 },
 
@@ -497,7 +547,19 @@ arr.push({name:"HF1",teamA:this.team1,teamB:this.team2,keyA:"m1a",keyB:"m1b"})
 
 if(this.fields>=2){
 
-arr.push({name:"HF2",teamA:this.team1,teamB:this.team2,keyA:"m2a",keyB:"m2b"})
+arr.push({name:this.mode==="single"?"NF":"HF2",teamA:this.team1,teamB:this.team2,keyA:"m2a",keyB:"m2b"})
+
+}
+
+if(this.mode==="twin" && this.fields>=3){
+
+arr.push({name:"NF1",teamA:this.team1,teamB:this.team2,keyA:"m3a",keyB:"m3b"})
+
+}
+
+if(this.mode==="twin" && this.fields===4){
+
+arr.push({name:"NF2",teamA:this.team1,teamB:this.team2,keyA:"m4a",keyB:"m4b"})
 
 }
 
