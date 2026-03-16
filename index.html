@@ -393,12 +393,36 @@ this.saveState()
 
 calculateTendenz(){
 
+if(this.mode==="single"){
+
 let a=this.scores.m1a
 let b=this.scores.m1b
 
 if(a>b)this.pointsA++
 else if(b>a)this.pointsB++
 else{this.pointsA++;this.pointsB++;}
+
+}
+
+if(this.mode==="twin"){
+
+let a1=this.scores.m1a
+let b1=this.scores.m1b
+
+let a2=this.scores.m2a
+let b2=this.scores.m2b
+
+// HF1
+if(a1>b1)this.pointsA++
+else if(b1>a1)this.pointsB++
+else{this.pointsA++;this.pointsB++;}
+
+// HF2
+if(a2>b2)this.pointsA++
+else if(b2>a2)this.pointsB++
+else{this.pointsA++;this.pointsB++;}
+
+}
 
 },
 
