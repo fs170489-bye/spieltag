@@ -51,8 +51,7 @@ Reset
 
 </div>
 
-
-<!-- MODUS AUSWAHL -->
+<!-- MODUS -->
 
 <div x-show="step===0" class="bg-white p-8 rounded-2xl shadow text-center">
 
@@ -76,7 +75,6 @@ Twin
 
 </div>
 
-
 <!-- TEAMS -->
 
 <div x-show="step===1" class="bg-white p-8 rounded-2xl shadow">
@@ -97,7 +95,7 @@ Zurück
 </button>
 
 <button
-@click="next()"
+@click="mode==='single' ? startGame() : next()"
 :disabled="!team1 || !team2"
 class="px-6 py-2 bg-indigo-600 text-white rounded">
 Weiter
@@ -106,7 +104,6 @@ Weiter
 </div>
 
 </div>
-
 
 <!-- FELDER -->
 
@@ -130,7 +127,7 @@ Zurück
 
 <button
 @click="next()"
-:disabled="!fields"
+:disabled="fields===0"
 class="px-6 py-2 bg-indigo-600 text-white rounded">
 Weiter
 </button>
@@ -138,7 +135,6 @@ Weiter
 </div>
 
 </div>
-
 
 <!-- ZEIT -->
 
@@ -164,7 +160,6 @@ Spiel starten
 </div>
 
 </div>
-
 
 <!-- SPIEL -->
 
@@ -281,12 +276,23 @@ this.resetTimer()
 
 next(){ this.step++ },
 
-prev(){ if(this.step>0) this.step-- },
+prev(){
+
+if(this.mode==="single" && this.step===4){
+this.step=1
+return
+}
+
+if(this.step>0) this.step--
+
+},
 
 startGame(){
+
 this.timeLeft=this.minutes*60
 this.updateDisplay()
 this.step=4
+
 },
 
 testTimer(){
@@ -425,14 +431,22 @@ hf1={a:1,b:1}
 hf2={a:2,b:2}
 }
 
-return [
+let arr=[
 
 {name:"HF1",a:hf1.a,b:hf1.b,keyA:"m1a",keyB:"m1b"},
-{name:"HF2",a:hf2.a,b:hf2.b,keyA:"m2a",keyB:"m2b"},
-{name:"NF1",a:3,b:3,keyA:"m3a",keyB:"m3b"},
-{name:"NF2",a:4,b:4,keyA:"m4a",keyB:"m4b"}
+{name:"HF2",a:hf2.a,b:hf2.b,keyA:"m2a",keyB:"m2b"}
 
 ]
+
+if(this.fields>=3){
+arr.push({name:"NF1",a:3,b:3,keyA:"m3a",keyB:"m3b"})
+}
+
+if(this.fields===4){
+arr.push({name:"NF2",a:4,b:4,keyA:"m4a",keyB:"m4b"})
+}
+
+return arr
 
 }
 
