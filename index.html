@@ -3,12 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>NFV Scoreboard</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
 </head>
 
 <body class="bg-slate-100 min-h-screen p-6 font-sans">
@@ -28,13 +26,9 @@ x-text="timerDisplay"></div>
 <div class="mt-3 text-2xl font-bold">
 
 <span x-text="team1"></span>
-
 <span class="mx-2" x-text="pointsA"></span>
-
 :
-
 <span class="mx-2" x-text="pointsB"></span>
-
 <span x-text="team2"></span>
 
 </div>
@@ -56,6 +50,7 @@ Reset
 </div>
 
 </div>
+
 
 <!-- MODUS -->
 
@@ -80,6 +75,7 @@ Twin
 </div>
 
 </div>
+
 
 <!-- TEAMS -->
 
@@ -111,6 +107,7 @@ Weiter
 
 </div>
 
+
 <!-- ZEIT -->
 
 <div x-show="step===2" class="bg-white p-8 rounded-2xl shadow">
@@ -134,6 +131,7 @@ Weiter
 
 </div>
 
+
 <!-- FELDER SINGLE -->
 
 <div x-show="step===3 && mode==='single'" class="bg-white p-8 rounded-2xl shadow">
@@ -143,7 +141,6 @@ Weiter
 <div class="flex gap-4">
 
 <button @click="fields=1" :class="fieldBtn(1)">HF</button>
-
 <button @click="fields=2" :class="fieldBtn(2)">HF + NF</button>
 
 </div>
@@ -163,6 +160,7 @@ Spiel starten
 
 </div>
 
+
 <!-- FELDER TWIN -->
 
 <div x-show="step===3 && mode==='twin'" class="bg-white p-8 rounded-2xl shadow">
@@ -172,9 +170,7 @@ Spiel starten
 <div class="flex gap-4">
 
 <button @click="fields=2" :class="fieldBtn(2)">HF1 + HF2</button>
-
 <button @click="fields=3" :class="fieldBtn(3)">HF1 + HF2 + NF1</button>
-
 <button @click="fields=4" :class="fieldBtn(4)">HF1 + HF2 + NF1 + NF2</button>
 
 </div>
@@ -194,6 +190,7 @@ Spiel starten
 
 </div>
 
+
 <!-- SPIEL -->
 
 <div x-show="step===4" class="space-y-6">
@@ -201,6 +198,12 @@ Spiel starten
 <h2 class="text-3xl font-bold">
 Begegnung <span x-text="round"></span> / 3
 </h2>
+
+<div x-show="mode==='twin' && round===3"
+class="bg-yellow-200 text-yellow-900 p-4 rounded-xl font-semibold text-center">
+⚠️ 2-4 Spieler tauschen
+</div>
+
 
 <template x-for="f in fieldList">
 
@@ -212,7 +215,7 @@ Begegnung <span x-text="round"></span> / 3
 
 <div>
 
-<div class="text-lg font-semibold mb-2" x-text="team1"></div>
+<div class="text-lg font-semibold mb-2" x-text="f.teamA"></div>
 
 <button @click="dec(f.keyA)" :disabled="timeLeft===0"
 class="w-20 h-20 text-4xl bg-red-500 text-white rounded-xl">−</button>
@@ -224,9 +227,7 @@ class="w-20 h-20 text-4xl bg-green-600 text-white rounded-xl">+</button>
 
 <div class="text-5xl font-bold">
 
-<span x-text="scores[f.keyA]"></span>
-
-:
+<span x-text="scores[f.keyA]"></span> :
 
 <span x-text="scores[f.keyB]"></span>
 
@@ -234,7 +235,7 @@ class="w-20 h-20 text-4xl bg-green-600 text-white rounded-xl">+</button>
 
 <div>
 
-<div class="text-lg font-semibold mb-2" x-text="team2"></div>
+<div class="text-lg font-semibold mb-2" x-text="f.teamB"></div>
 
 <button @click="dec(f.keyB)" :disabled="timeLeft===0"
 class="w-20 h-20 text-4xl bg-red-500 text-white rounded-xl">−</button>
@@ -250,6 +251,7 @@ class="w-20 h-20 text-4xl bg-green-600 text-white rounded-xl">+</button>
 
 </template>
 
+
 <div class="flex justify-between mt-6">
 
 <button @click="prevRound()" class="px-6 py-3 bg-gray-500 text-white rounded">
@@ -264,6 +266,7 @@ x-text="round===3 ? 'Endergebnis' : 'Weiter →'">
 </div>
 
 </div>
+
 
 <!-- ENDERGEBNIS -->
 
@@ -293,6 +296,7 @@ Neues Spiel
 </div>
 
 </div>
+
 
 <script>
 
@@ -334,21 +338,7 @@ this.updateDisplay()
 
 saveState(){
 
-localStorage.setItem("nfv_scoreboard_state",JSON.stringify({
-
-mode:this.mode,
-step:this.step,
-team1:this.team1,
-team2:this.team2,
-fields:this.fields,
-round:this.round,
-minutes:this.minutes,
-scores:this.scores,
-pointsA:this.pointsA,
-pointsB:this.pointsB,
-timeLeft:this.timeLeft
-
-}))
+localStorage.setItem("nfv_scoreboard_state",JSON.stringify(this))
 
 },
 
@@ -468,25 +458,35 @@ let arr=[]
 
 if(this.mode==="single"){
 
-arr.push({name:"HF1",keyA:"m1a",keyB:"m1b"})
+arr.push({name:"HF1",teamA:this.team1,teamB:this.team2,keyA:"m1a",keyB:"m1b"})
 
 if(this.fields===2){
-arr.push({name:"NF",keyA:"m2a",keyB:"m2b"})
+arr.push({name:"NF",teamA:this.team1,teamB:this.team2,keyA:"m2a",keyB:"m2b"})
 }
 
 }
 
 if(this.mode==="twin"){
 
-arr.push({name:"HF1",keyA:"m1a",keyB:"m1b"})
-arr.push({name:"HF2",keyA:"m2a",keyB:"m2b"})
+let hf1A=1
+let hf1B=1
+let hf2A=2
+let hf2B=2
+
+if(this.round===2){
+hf1B=2
+hf2B=1
+}
+
+arr.push({name:"HF1",teamA:this.team1+" "+hf1A,teamB:this.team2+" "+hf1B,keyA:"m1a",keyB:"m1b"})
+arr.push({name:"HF2",teamA:this.team1+" "+hf2A,teamB:this.team2+" "+hf2B,keyA:"m2a",keyB:"m2b"})
 
 if(this.fields>=3){
-arr.push({name:"NF1",keyA:"m3a",keyB:"m3b"})
+arr.push({name:"NF1",teamA:this.team1+" 3",teamB:this.team2+" 3",keyA:"m3a",keyB:"m3b"})
 }
 
 if(this.fields===4){
-arr.push({name:"NF2",keyA:"m4a",keyB:"m4b"})
+arr.push({name:"NF2",teamA:this.team1+" 4",teamB:this.team2+" 4",keyA:"m4a",keyB:"m4b"})
 }
 
 }
