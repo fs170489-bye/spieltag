@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>NFV Scoreboard</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
@@ -28,22 +27,21 @@ x-text="timerDisplay"></div>
 
 <div class="flex gap-3">
 
-<button @click="testTimer()" class="px-4 py-2 bg-purple-500 rounded">
+<button @click="testTimer()" class="px-4 py-2 bg-purple-500 rounded text-white">
 Test 10s
 </button>
 
-<button @click="startPauseTimer()" class="px-6 py-2 bg-green-500 rounded">
+<button @click="startPauseTimer()" class="px-6 py-2 bg-green-500 rounded text-white">
 Start / Pause
 </button>
 
-<button @click="resetTimer()" class="px-6 py-2 bg-yellow-500 rounded">
+<button @click="resetTimer()" class="px-6 py-2 bg-yellow-500 rounded text-white">
 Reset
 </button>
 
 </div>
 
 </div>
-
 
 <!-- MODUS -->
 
@@ -54,27 +52,22 @@ Reset
 <div class="grid grid-cols-2 gap-6">
 
 <button
-@click="mode='single';next()"
+@click="mode='single'; next()"
 class="p-12 bg-blue-600 text-white text-2xl font-bold rounded-xl">
-
 Single
-
 </button>
 
 <button
-@click="mode='twin';next()"
+@click="mode='twin'; next()"
 class="p-12 bg-indigo-600 text-white text-2xl font-bold rounded-xl">
-
 Twin
-
 </button>
 
 </div>
 
 </div>
 
-
-<!-- TEAMS -->
+<!-- TEAM EINGABE -->
 
 <div x-show="step===1" class="bg-white p-8 rounded-2xl shadow">
 
@@ -89,7 +82,7 @@ Twin
 
 <div class="flex justify-between mt-6">
 
-<button @click="prev()" class="px-6 py-2 bg-gray-400 text-white rounded">
+<button @click="prev()" class="px-6 py-2 bg-gray-500 text-white rounded">
 Zurück
 </button>
 
@@ -97,15 +90,12 @@ Zurück
 @click="next()"
 :disabled="!team1 || !team2"
 class="px-6 py-2 bg-indigo-600 text-white rounded">
-
 Weiter
-
 </button>
 
 </div>
 
 </div>
-
 
 <!-- FELDER -->
 
@@ -115,21 +105,15 @@ Weiter
 
 <div class="flex gap-4">
 
-<button
-@click="fields=2"
-:class="fieldBtn(2)">
+<button @click="fields=2" :class="fieldBtn(2)">
 HF1 + HF2
 </button>
 
-<button
-@click="fields=3"
-:class="fieldBtn(3)">
+<button @click="fields=3" :class="fieldBtn(3)">
 HF1 + HF2 + NF1
 </button>
 
-<button
-@click="fields=4"
-:class="fieldBtn(4)">
+<button @click="fields=4" :class="fieldBtn(4)">
 HF1 + HF2 + NF1 + NF2
 </button>
 
@@ -137,7 +121,7 @@ HF1 + HF2 + NF1 + NF2
 
 <div class="flex justify-between mt-6">
 
-<button @click="prev()" class="px-6 py-2 bg-gray-400 text-white rounded">
+<button @click="prev()" class="px-6 py-2 bg-gray-500 text-white rounded">
 Zurück
 </button>
 
@@ -145,15 +129,12 @@ Zurück
 @click="next()"
 :disabled="!fields"
 class="px-6 py-2 bg-indigo-600 text-white rounded">
-
 Weiter
-
 </button>
 
 </div>
 
 </div>
-
 
 <!-- ZEIT -->
 
@@ -161,13 +142,14 @@ Weiter
 
 <h2 class="text-2xl font-bold mb-4">Zeit einstellen (Minuten)</h2>
 
-<input type="number"
+<input
+type="number"
 x-model.number="minutes"
 class="border p-3 rounded w-40 text-xl">
 
 <div class="flex justify-between mt-6">
 
-<button @click="prev()" class="px-6 py-2 bg-gray-400 text-white rounded">
+<button @click="prev()" class="px-6 py-2 bg-gray-500 text-white rounded">
 Zurück
 </button>
 
@@ -178,7 +160,6 @@ Spiel starten
 </div>
 
 </div>
-
 
 <!-- SPIEL -->
 
@@ -198,14 +179,25 @@ Begegnung <span x-text="round"></span>
 
 <div>
 
-<div x-text="team1 + ' ' + f.a"></div>
+<div class="text-lg font-semibold mb-2" x-text="team1 + ' ' + f.a"></div>
 
-<button @click="dec(f.keyA)">-</button>
-<button @click="inc(f.keyA)">+</button>
+<button
+@click="dec(f.keyA)"
+:disabled="timeLeft===0"
+class="w-20 h-20 text-4xl bg-red-500 text-white rounded-xl">
+−
+</button>
+
+<button
+@click="inc(f.keyA)"
+:disabled="timeLeft===0"
+class="w-20 h-20 text-4xl bg-green-600 text-white rounded-xl">
++
+</button>
 
 </div>
 
-<div class="text-3xl font-bold">
+<div class="text-5xl font-bold">
 
 <span x-text="scores[f.keyA]"></span>
 :
@@ -215,10 +207,21 @@ Begegnung <span x-text="round"></span>
 
 <div>
 
-<div x-text="team2 + ' ' + f.b"></div>
+<div class="text-lg font-semibold mb-2" x-text="team2 + ' ' + f.b"></div>
 
-<button @click="dec(f.keyB)">-</button>
-<button @click="inc(f.keyB)">+</button>
+<button
+@click="dec(f.keyB)"
+:disabled="timeLeft===0"
+class="w-20 h-20 text-4xl bg-red-500 text-white rounded-xl">
+−
+</button>
+
+<button
+@click="inc(f.keyB)"
+:disabled="timeLeft===0"
+class="w-20 h-20 text-4xl bg-green-600 text-white rounded-xl">
++
+</button>
 
 </div>
 
@@ -231,7 +234,6 @@ Begegnung <span x-text="round"></span>
 </div>
 
 </div>
-
 
 <script>
 
@@ -310,19 +312,26 @@ updateDisplay(){
 let m=Math.floor(this.timeLeft/60)
 let s=this.timeLeft%60
 
-this.timerDisplay=
+this.timerDisplay =
 m.toString().padStart(2,"0")+":"+
 s.toString().padStart(2,"0")
 
 },
 
-inc(k){this.scores[k]++},
-dec(k){if(this.scores[k]>0)this.scores[k]--},
+inc(k){
+if(this.timeLeft===0) return
+this.scores[k]++
+},
+
+dec(k){
+if(this.timeLeft===0) return
+if(this.scores[k]>0) this.scores[k]--
+},
 
 fieldBtn(n){
 
-return "px-4 py-2 rounded "+
-(this.fields===n ? "bg-indigo-600 text-white":"bg-gray-200")
+return "px-5 py-3 rounded text-white " +
+(this.fields===n ? "bg-indigo-600":"bg-gray-400")
 
 },
 
