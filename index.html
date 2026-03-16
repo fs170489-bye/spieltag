@@ -51,163 +51,22 @@ Reset
 
 </div>
 
-
-<!-- MODUS -->
-
-<div x-show="step===0" class="bg-white p-8 rounded-2xl shadow">
-
-<h2 class="text-3xl font-bold mb-6">Spielmodus wählen</h2>
-
-<div class="grid grid-cols-2 gap-6">
-
-<button
-@click="mode='single'; next()"
-class="p-12 bg-blue-600 text-white text-2xl font-bold rounded-xl">
-Single
-</button>
-
-<button
-@click="mode='twin'; next()"
-class="p-12 bg-indigo-600 text-white text-2xl font-bold rounded-xl">
-Twin
-</button>
-
-</div>
-
-</div>
-
-
-<!-- TEAMS -->
-
-<div x-show="step===1" class="bg-white p-8 rounded-2xl shadow">
-
-<h2 class="text-2xl font-bold mb-4">Teams eingeben</h2>
-
-<div class="grid grid-cols-2 gap-4">
-
-<input x-model="team1" placeholder="Team A" class="border p-3 rounded">
-<input x-model="team2" placeholder="Team B" class="border p-3 rounded">
-
-</div>
-
-<div class="flex justify-between mt-6">
-
-<button @click="prev()" class="px-6 py-2 bg-gray-500 text-white rounded">
-Zurück
-</button>
-
-<button
-@click="next()"
-:disabled="!team1 || !team2"
-class="px-6 py-2 bg-indigo-600 text-white rounded">
-Weiter
-</button>
-
-</div>
-
-</div>
-
-
-<!-- FELDER -->
-
-<div x-show="step===2 && mode==='twin'" class="bg-white p-8 rounded-2xl shadow">
-
-<h2 class="text-2xl font-bold mb-4">Spielfelder wählen</h2>
-
-<div class="flex gap-4">
-
-<button @click="fields=2" :class="fieldBtn(2)">HF1 + HF2</button>
-<button @click="fields=3" :class="fieldBtn(3)">HF1 + HF2 + NF1</button>
-<button @click="fields=4" :class="fieldBtn(4)">HF1 + HF2 + NF1 + NF2</button>
-
-</div>
-
-<div class="flex justify-between mt-6">
-
-<button @click="prev()" class="px-6 py-2 bg-gray-500 text-white rounded">
-Zurück
-</button>
-
-<button
-@click="next()"
-:disabled="!fields"
-class="px-6 py-2 bg-indigo-600 text-white rounded">
-Weiter
-</button>
-
-</div>
-
-</div>
-
-
-<!-- BEGEGNUNGEN -->
-
-<div x-show="step===3" class="bg-white p-8 rounded-2xl shadow">
-
-<h2 class="text-2xl font-bold mb-4">Anzahl Begegnungen</h2>
-
-<div class="flex gap-3 flex-wrap">
-
-<template x-for="n in 6">
-<button
-@click="maxRounds=n"
-:class="roundBtn(n)"
-x-text="n">
-</button>
-</template>
-
-</div>
-
-<div class="flex justify-between mt-6">
-
-<button @click="prev()" class="px-6 py-2 bg-gray-500 text-white rounded">
-Zurück
-</button>
-
-<button
-@click="next()"
-:disabled="!maxRounds"
-class="px-6 py-2 bg-indigo-600 text-white rounded">
-Weiter
-</button>
-
-</div>
-
-</div>
-
-
-<!-- ZEIT -->
-
-<div x-show="step===4" class="bg-white p-8 rounded-2xl shadow">
-
-<h2 class="text-2xl font-bold mb-4">Zeit einstellen (Minuten)</h2>
-
-<input type="number"
-x-model.number="minutes"
-class="border p-3 rounded w-40 text-xl">
-
-<div class="flex justify-between mt-6">
-
-<button @click="prev()" class="px-6 py-2 bg-gray-500 text-white rounded">
-Zurück
-</button>
-
-<button @click="startGame()" class="px-6 py-2 bg-green-600 text-white rounded">
-Spiel starten
-</button>
-
-</div>
-
-</div>
-
-
 <!-- SPIEL -->
 
-<div x-show="step===5" class="space-y-6">
+<div class="space-y-6">
 
 <h2 class="text-3xl font-bold">
-Begegnung <span x-text="round"></span> / <span x-text="maxRounds"></span>
+Begegnung <span x-text="round"></span> / 3
 </h2>
+
+<!-- Info bei Begegnung 3 -->
+
+<div x-show="round===3"
+class="bg-yellow-200 text-yellow-900 p-4 rounded-xl font-semibold text-center">
+
+⚠️ 2–4 Spieler tauschen
+
+</div>
 
 <template x-for="f in fieldList">
 
@@ -259,7 +118,7 @@ class="w-20 h-20 text-4xl bg-green-600 text-white rounded-xl">+</button>
 <button @click="prevRound()" :disabled="round===1"
 class="px-6 py-3 bg-gray-500 text-white rounded">← Zurück</button>
 
-<button @click="nextRound()" :disabled="round===maxRounds"
+<button @click="nextRound()" :disabled="round===3"
 class="px-6 py-3 bg-indigo-600 text-white rounded">Weiter →</button>
 
 </div>
@@ -268,47 +127,34 @@ class="px-6 py-3 bg-indigo-600 text-white rounded">Weiter →</button>
 
 </div>
 
+
 <script>
 
 function app(){
 
 return{
 
-mode:null,
-step:0,
-
-team1:"",
-team2:"",
-fields:0,
+team1:"Team A",
+team2:"Team B",
 
 round:1,
-maxRounds:0,
-minutes:10,
 
-scores:{m1a:0,m1b:0,m2a:0,m2b:0,m3a:0,m3b:0,m4a:0,m4b:0},
+scores:{
+m1a:0,m1b:0,
+m2a:0,m2b:0,
+m3a:0,m3b:0,
+m4a:0,m4b:0
+},
 
 pointsA:0,
 pointsB:0,
 
 timeLeft:0,
+minutes:10,
 timer:null,
 timerDisplay:"00:00",
 
 init(){ this.resetTimer() },
-
-next(){ this.step++ },
-prev(){ if(this.step>0) this.step-- },
-
-startGame(){
-this.timeLeft=this.minutes*60
-this.updateDisplay()
-this.step=5
-},
-
-testTimer(){
-this.timeLeft=10
-this.updateDisplay()
-},
 
 startPauseTimer(){
 
@@ -330,13 +176,17 @@ this.updateDisplay()
 clearInterval(this.timer)
 this.timer=null
 new Audio("https://actions.google.com/sounds/v1/alarms/buzzer.ogg").play()
-
 this.calculateTendenz()
 
 }
 
 },1000)
 
+},
+
+testTimer(){
+this.timeLeft=10
+this.updateDisplay()
 },
 
 resetTimer(){
@@ -349,7 +199,7 @@ updateDisplay(){
 let m=Math.floor(this.timeLeft/60)
 let s=this.timeLeft%60
 
-this.timerDisplay =
+this.timerDisplay=
 m.toString().padStart(2,"0")+":"+
 s.toString().padStart(2,"0")
 
@@ -370,16 +220,21 @@ calculateTendenz(){
 let a=0
 let b=0
 
-for(let i=1;i<=this.fields;i++){
+/* nur HF Felder */
 
-let ta=this.scores["m"+i+"a"]
-let tb=this.scores["m"+i+"b"]
+let hf1a=this.scores.m1a
+let hf1b=this.scores.m1b
 
-if(ta>tb) a++
-else if(tb>ta) b++
-else { a++; b++; }
+let hf2a=this.scores.m2a
+let hf2b=this.scores.m2b
 
-}
+if(hf1a>hf1b) a++
+else if(hf1b>hf1a) b++
+else {a++;b++;}
+
+if(hf2a>hf2b) a++
+else if(hf2b>hf2a) b++
+else {a++;b++;}
 
 this.pointsA+=a
 this.pointsB+=b
@@ -390,18 +245,17 @@ nextRound(){
 
 this.calculateTendenz()
 
+if(this.round<3){
 this.round++
-
 this.resetScores()
+}
 
 },
 
 prevRound(){
-
 if(this.round>1){
 this.round--
 }
-
 },
 
 resetScores(){
@@ -415,46 +269,69 @@ m4a:0,m4b:0
 
 },
 
-fieldBtn(n){
-return "px-5 py-3 rounded text-white "+
-(this.fields===n ? "bg-indigo-600":"bg-gray-400")
-},
-
-roundBtn(n){
-return "px-4 py-2 rounded text-white "+
-(this.maxRounds===n ? "bg-indigo-600":"bg-gray-400")
-},
-
 get fieldList(){
 
-const names=["HF1","HF2","NF1","NF2"]
+/* HF Rotation */
 
-const rotA=[1,2,3,4]
+let hf1
+let hf2
 
-const rotB=[
-[1,2,3,4],
-[2,1,4,3],
-[3,4,1,2],
-[4,3,2,1]
-]
+if(this.round===1){
 
-let r=(this.round-1)%4
-
-let arr=[]
-
-for(let i=0;i<this.fields;i++){
-
-arr.push({
-name:names[i],
-a:rotA[i],
-b:rotB[r][i],
-keyA:"m"+(i+1)+"a",
-keyB:"m"+(i+1)+"b"
-})
+hf1={a:1,b:1}
+hf2={a:2,b:2}
 
 }
 
-return arr
+if(this.round===2){
+
+hf1={a:1,b:2}
+hf2={a:2,b:1}
+
+}
+
+if(this.round===3){
+
+hf1={a:1,b:1}
+hf2={a:2,b:2}
+
+}
+
+return [
+
+{
+name:"HF1",
+a:hf1.a,
+b:hf1.b,
+keyA:"m1a",
+keyB:"m1b"
+},
+
+{
+name:"HF2",
+a:hf2.a,
+b:hf2.b,
+keyA:"m2a",
+keyB:"m2b"
+},
+
+{
+name:"NF1",
+a:3,
+b:3,
+keyA:"m3a",
+keyB:"m3b"
+},
+
+{
+name:"NF2",
+a:4,
+b:4,
+keyA:"m4a",
+keyB:"m4b"
+}
+
+]
 
 }
 
