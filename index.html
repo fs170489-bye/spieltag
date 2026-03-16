@@ -7,7 +7,6 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
 </head>
 
 <body class="bg-slate-100 min-h-screen p-6 font-sans">
@@ -105,17 +104,9 @@ Weiter
 
 <div class="flex gap-4">
 
-<button @click="fields=2" :class="fieldBtn(2)">
-HF1 + HF2
-</button>
-
-<button @click="fields=3" :class="fieldBtn(3)">
-HF1 + HF2 + NF1
-</button>
-
-<button @click="fields=4" :class="fieldBtn(4)">
-HF1 + HF2 + NF1 + NF2
-</button>
+<button @click="fields=2" :class="fieldBtn(2)">HF1 + HF2</button>
+<button @click="fields=3" :class="fieldBtn(3)">HF1 + HF2 + NF1</button>
+<button @click="fields=4" :class="fieldBtn(4)">HF1 + HF2 + NF1 + NF2</button>
 
 </div>
 
@@ -136,9 +127,44 @@ Weiter
 
 </div>
 
-<!-- ZEIT -->
+<!-- BEGEGNUNGEN -->
 
 <div x-show="step===3" class="bg-white p-8 rounded-2xl shadow">
+
+<h2 class="text-2xl font-bold mb-4">Anzahl Begegnungen</h2>
+
+<div class="flex gap-3 flex-wrap">
+
+<template x-for="n in 6">
+<button
+@click="maxRounds=n"
+:class="roundBtn(n)"
+x-text="n">
+</button>
+</template>
+
+</div>
+
+<div class="flex justify-between mt-6">
+
+<button @click="prev()" class="px-6 py-2 bg-gray-500 text-white rounded">
+Zurück
+</button>
+
+<button
+@click="next()"
+:disabled="!maxRounds"
+class="px-6 py-2 bg-indigo-600 text-white rounded">
+Weiter
+</button>
+
+</div>
+
+</div>
+
+<!-- ZEIT -->
+
+<div x-show="step===4" class="bg-white p-8 rounded-2xl shadow">
 
 <h2 class="text-2xl font-bold mb-4">Zeit einstellen (Minuten)</h2>
 
@@ -163,10 +189,10 @@ Spiel starten
 
 <!-- SPIEL -->
 
-<div x-show="step===4" class="space-y-6">
+<div x-show="step===5" class="space-y-6">
 
 <h2 class="text-3xl font-bold">
-Begegnung <span x-text="round"></span>
+Begegnung <span x-text="round"></span> / <span x-text="maxRounds"></span>
 </h2>
 
 <template x-for="f in fieldList">
@@ -181,26 +207,17 @@ Begegnung <span x-text="round"></span>
 
 <div class="text-lg font-semibold mb-2" x-text="team1 + ' ' + f.a"></div>
 
-<button
-@click="dec(f.keyA)"
-:disabled="timeLeft===0"
-class="w-20 h-20 text-4xl bg-red-500 text-white rounded-xl">
-−
-</button>
+<button @click="dec(f.keyA)" :disabled="timeLeft===0"
+class="w-20 h-20 text-4xl bg-red-500 text-white rounded-xl">−</button>
 
-<button
-@click="inc(f.keyA)"
-:disabled="timeLeft===0"
-class="w-20 h-20 text-4xl bg-green-600 text-white rounded-xl">
-+
-</button>
+<button @click="inc(f.keyA)" :disabled="timeLeft===0"
+class="w-20 h-20 text-4xl bg-green-600 text-white rounded-xl">+</button>
 
 </div>
 
 <div class="text-5xl font-bold">
 
-<span x-text="scores[f.keyA]"></span>
-:
+<span x-text="scores[f.keyA]"></span> :
 <span x-text="scores[f.keyB]"></span>
 
 </div>
@@ -209,19 +226,11 @@ class="w-20 h-20 text-4xl bg-green-600 text-white rounded-xl">
 
 <div class="text-lg font-semibold mb-2" x-text="team2 + ' ' + f.b"></div>
 
-<button
-@click="dec(f.keyB)"
-:disabled="timeLeft===0"
-class="w-20 h-20 text-4xl bg-red-500 text-white rounded-xl">
-−
-</button>
+<button @click="dec(f.keyB)" :disabled="timeLeft===0"
+class="w-20 h-20 text-4xl bg-red-500 text-white rounded-xl">−</button>
 
-<button
-@click="inc(f.keyB)"
-:disabled="timeLeft===0"
-class="w-20 h-20 text-4xl bg-green-600 text-white rounded-xl">
-+
-</button>
+<button @click="inc(f.keyB)" :disabled="timeLeft===0"
+class="w-20 h-20 text-4xl bg-green-600 text-white rounded-xl">+</button>
 
 </div>
 
@@ -231,9 +240,30 @@ class="w-20 h-20 text-4xl bg-green-600 text-white rounded-xl">
 
 </template>
 
+<!-- BEGEGNUNG NAVIGATION -->
+
+<div class="flex justify-between mt-6">
+
+<button
+@click="prevRound()"
+:disabled="round===1"
+class="px-6 py-3 bg-gray-500 text-white rounded">
+← Zurück
+</button>
+
+<button
+@click="nextRound()"
+:disabled="round===maxRounds"
+class="px-6 py-3 bg-indigo-600 text-white rounded">
+Weiter →
+</button>
+
 </div>
 
 </div>
+
+</div>
+
 
 <script>
 
@@ -249,6 +279,7 @@ team2:"",
 fields:0,
 
 round:1,
+maxRounds:0,
 minutes:10,
 
 scores:{m1a:0,m1b:0,m2a:0,m2b:0,m3a:0,m3b:0,m4a:0,m4b:0},
@@ -267,7 +298,7 @@ prev(){if(this.step>0)this.step--},
 startGame(){
 this.timeLeft=this.minutes*60
 this.updateDisplay()
-this.step=4
+this.step=5
 },
 
 testTimer(){
@@ -328,11 +359,22 @@ if(this.timeLeft===0) return
 if(this.scores[k]>0) this.scores[k]--
 },
 
-fieldBtn(n){
+nextRound(){
+if(this.round < this.maxRounds) this.round++
+},
 
+prevRound(){
+if(this.round > 1) this.round--
+},
+
+fieldBtn(n){
 return "px-5 py-3 rounded text-white " +
 (this.fields===n ? "bg-indigo-600":"bg-gray-400")
+},
 
+roundBtn(n){
+return "px-4 py-2 rounded text-white " +
+(this.maxRounds===n ? "bg-indigo-600":"bg-gray-400")
 },
 
 get fieldList(){
@@ -355,13 +397,11 @@ let arr=[]
 for(let i=0;i<this.fields;i++){
 
 arr.push({
-
 name:names[i],
 a:rotA[i],
 b:rotB[r][i],
 keyA:"m"+(i+1)+"a",
 keyB:"m"+(i+1)+"b"
-
 })
 
 }
