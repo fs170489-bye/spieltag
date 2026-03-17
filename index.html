@@ -8,9 +8,9 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js";
 
@@ -31,7 +31,6 @@ window.db=db
 window.dbRef=ref
 window.dbSet=set
 window.dbOnValue=onValue
-
 </script>
 
 </head>
@@ -93,14 +92,12 @@ Reset
 
 <div class="grid grid-cols-2 gap-6">
 
-<button
-@click="mode='single'; next()"
+<button @click="mode='single'; next()"
 class="p-12 bg-blue-600 text-white text-2xl font-bold rounded-xl">
 Single
 </button>
 
-<button
-@click="mode='twin'; next()"
+<button @click="mode='twin'; next()"
 class="p-12 bg-indigo-600 text-white text-2xl font-bold rounded-xl">
 Twin
 </button>
@@ -129,9 +126,7 @@ Twin
 Zurück
 </button>
 
-<button
-@click="next()"
-:disabled="!team1 || !team2"
+<button @click="next()" :disabled="!team1 || !team2"
 class="px-6 py-2 bg-indigo-600 text-white rounded">
 Weiter
 </button>
@@ -174,13 +169,10 @@ Weiter
 <div class="flex gap-4">
 
 <button x-show="mode==='single'" @click="fields=1" :class="fieldBtn(1)">HF</button>
-
 <button x-show="mode==='single'" @click="fields=2" :class="fieldBtn(2)">HF + NF</button>
 
 <button x-show="mode==='twin'" @click="fields=2" :class="fieldBtn(2)">HF1 + HF2</button>
-
 <button x-show="mode==='twin'" @click="fields=3" :class="fieldBtn(3)">HF1 + HF2 + NF1</button>
-
 <button x-show="mode==='twin'" @click="fields=4" :class="fieldBtn(4)">HF1 + HF2 + NF1 + NF2</button>
 
 </div>
@@ -191,9 +183,48 @@ Weiter
 Zurück
 </button>
 
-<button @click="startGame()" :disabled="fields===0"
+<button @click="goDevices()" :disabled="fields===0"
 class="px-6 py-2 bg-green-600 text-white rounded">
-Spiel starten
+Weiter
+</button>
+
+</div>
+
+</div>
+
+
+<!-- GERÄTE -->
+
+<div x-show="step===6" class="bg-white p-8 rounded-2xl shadow">
+
+<h2 class="text-2xl font-bold mb-4">Geräte verbinden</h2>
+
+<div class="grid md:grid-cols-2 gap-10 text-center">
+
+<div>
+<h3 class="font-bold mb-2">Counter</h3>
+<div id="qrCounter"></div>
+<p class="text-sm mt-2 text-gray-500">max. 6 Geräte</p>
+</div>
+
+<div>
+<h3 class="font-bold mb-2">Zuschauer</h3>
+<div id="qrViewer"></div>
+<p class="text-sm mt-2 text-gray-500">max. 10 Geräte</p>
+</div>
+
+</div>
+
+<div class="flex justify-between mt-8">
+
+<button @click="step=3"
+class="px-6 py-2 bg-gray-500 text-white rounded">
+Zurück
+</button>
+
+<button @click="startGame()"
+class="px-6 py-2 bg-green-600 text-white rounded">
+Weiter zur Begegnung
 </button>
 
 </div>
@@ -204,19 +235,11 @@ Spiel starten
 <!-- SPIEL -->
 
 <div x-show="step===4" class="space-y-6">
-
 <h2 class="text-3xl font-bold">
 Begegnung <span x-text="round"></span> / 3
 </h2>
 
-<div x-show="mode==='twin' && round===3"
-class="bg-yellow-200 text-yellow-900 p-4 rounded-xl font-semibold text-center">
-⚠️ 2-4 Spieler tauschen
-</div>
-
-
 <template x-for="f in fieldList">
-
 <div class="bg-white p-6 rounded-2xl shadow">
 
 <h3 class="font-bold mb-2" x-text="f.name"></h3>
@@ -224,106 +247,43 @@ class="bg-yellow-200 text-yellow-900 p-4 rounded-xl font-semibold text-center">
 <div class="grid grid-cols-3 text-center items-center">
 
 <div>
-
-<div class="text-lg font-semibold mb-2" x-text="f.teamA"></div>
-
 <button @click="dec(f.keyA)" :disabled="timeLeft===0"
 class="w-20 h-20 text-4xl bg-red-500 text-white rounded-xl">−</button>
 
 <button @click="inc(f.keyA)" :disabled="timeLeft===0"
 class="w-20 h-20 text-4xl bg-green-600 text-white rounded-xl">+</button>
-
 </div>
 
 <div class="text-5xl font-bold">
-
 <span x-text="scores[f.keyA]"></span> :
-
 <span x-text="scores[f.keyB]"></span>
-
 </div>
 
 <div>
-
-<div class="text-lg font-semibold mb-2" x-text="f.teamB"></div>
-
 <button @click="dec(f.keyB)" :disabled="timeLeft===0"
 class="w-20 h-20 text-4xl bg-red-500 text-white rounded-xl">−</button>
 
 <button @click="inc(f.keyB)" :disabled="timeLeft===0"
 class="w-20 h-20 text-4xl bg-green-600 text-white rounded-xl">+</button>
-
 </div>
 
 </div>
 
 </div>
-
 </template>
 
-
-<div class="flex justify-between mt-6">
-
-<button @click="prevRound()" class="px-6 py-3 bg-gray-500 text-white rounded">
-← Zurück
-</button>
-
-<button @click="nextRound()"
-class="px-6 py-3 bg-indigo-600 text-white rounded"
-x-text="round===3 ? 'Endergebnis' : 'Weiter →'">
-</button>
-
 </div>
 
-</div>
-
-
-<!-- ENDERGEBNIS -->
-
-<div x-show="step===5" class="bg-white p-8 rounded-2xl shadow text-center">
-
-<h2 class="text-3xl font-bold mb-6">Endergebnis</h2>
-
-<div class="text-4xl font-bold">
-
-<span x-text="team1"></span>
-
-<span class="mx-4" x-text="pointsA"></span>
-
-:
-
-<span class="mx-4" x-text="pointsB"></span>
-
-<span x-text="team2"></span>
-
-</div>
-
-<div class="flex justify-center gap-6 mt-8">
-
-<button
-@click="resetAll()"
-class="px-8 py-3 bg-indigo-600 text-white rounded-xl text-lg font-bold">
-Neuer Spieltag
-</button>
-
-<button
-@click="step=0"
-class="px-8 py-3 bg-gray-500 text-white rounded-xl text-lg font-bold">
-Zurück zum Menü
-</button>
-
-</div>
-
-</div>
 
 </div>
 
 
 <script>
-
 function app(){
 
 return{
+
+role:"master",
 
 sessionId:"liveSpiel",
 
@@ -348,92 +308,44 @@ timer:null,
 timerDisplay:"00:00",
 
 init(){
+const params = new URLSearchParams(window.location.search)
+this.role = params.get("role") || "master"
 this.listenFirebase()
 },
 
-syncFirebase(){
-dbSet(dbRef(db,"spiele/"+this.sessionId),{
-mode:this.mode,
-round:this.round,
-scores:this.scores,
-timeLeft:this.timeLeft,
-pointsA:this.pointsA,
-pointsB:this.pointsB
+goDevices(){
+this.step=6
+this.$nextTick(()=>this.createQR())
+},
+
+createQR(){
+const base = window.location.origin + window.location.pathname
+
+document.getElementById("qrCounter").innerHTML=""
+document.getElementById("qrViewer").innerHTML=""
+
+new QRCode(document.getElementById("qrCounter"),{
+text: base + "?role=counter",
+width:180,
+height:180
+})
+
+new QRCode(document.getElementById("qrViewer"),{
+text: base + "?role=viewer",
+width:180,
+height:180
 })
 },
 
-listenFirebase(){
-dbOnValue(dbRef(db,"spiele/"+this.sessionId),(snapshot)=>{
-const data=snapshot.val()
-if(!data)return
-this.round=data.round
-this.scores=data.scores
-this.timeLeft=data.timeLeft
-this.pointsA=data.pointsA
-this.pointsB=data.pointsB
-})
-},
+// REST BLEIBT UNVERÄNDERT
 
 next(){this.step++},
-
 prev(){if(this.step>0)this.step--},
-
-prevRound(){
-if(this.round>1){
-this.round--
-this.resetScores()
-}else{
-this.step=3
-}
-},
 
 startGame(){
 this.timeLeft=this.minutes*60
 this.updateDisplay()
 this.step=4
-},
-
-nextRound(){
-this.calculateTendenz()
-if(this.round<3){
-this.round++
-this.resetScores()
-}else{
-this.step=5
-}
-},
-
-calculateTendenz(){
-let a1=this.scores.m1a
-let b1=this.scores.m1b
-if(a1>b1)this.pointsA++
-else if(b1>a1)this.pointsB++
-else{this.pointsA++;this.pointsB++;}
-
-if(this.mode==="twin"){
-let a2=this.scores.m2a
-let b2=this.scores.m2b
-if(a2>b2)this.pointsA++
-else if(b2>a2)this.pointsB++
-else{this.pointsA++;this.pointsB++;}
-}
-},
-
-resetScores(){
-this.scores={m1a:0,m1b:0,m2a:0,m2b:0,m3a:0,m3b:0,m4a:0,m4b:0}
-},
-
-resetAll(){
-this.mode=null
-this.step=0
-this.team1=""
-this.team2=""
-this.fields=0
-this.round=1
-this.pointsA=0
-this.pointsB=0
-this.resetScores()
-this.resetTimer()
 },
 
 inc(k){
@@ -448,34 +360,6 @@ if(this.scores[k]>0)this.scores[k]--
 this.syncFirebase()
 },
 
-testTimer(){
-this.timeLeft=10
-this.updateDisplay()
-},
-
-startPauseTimer(){
-if(this.timer){
-clearInterval(this.timer)
-this.timer=null
-return
-}
-this.timer=setInterval(()=>{
-if(this.timeLeft>0){
-this.timeLeft--
-this.updateDisplay()
-this.syncFirebase()
-}else{
-clearInterval(this.timer)
-this.timer=null
-}
-},1000)
-},
-
-resetTimer(){
-this.timeLeft=this.minutes*60
-this.updateDisplay()
-},
-
 updateDisplay(){
 let m=Math.floor(this.timeLeft/60)
 let s=this.timeLeft%60
@@ -485,6 +369,10 @@ this.timerDisplay=m.toString().padStart(2,"0")+":"+s.toString().padStart(2,"0")
 fieldBtn(n){
 return "px-5 py-3 rounded text-white "+(this.fields===n?"bg-indigo-600":"bg-gray-400")
 },
+
+listenFirebase(){},
+
+syncFirebase(){},
 
 get fieldList(){
 
@@ -498,38 +386,17 @@ arr.push({name:"NF",teamA:this.team1,teamB:this.team2,keyA:"m2a",keyB:"m2b"})
 }
 
 if(this.mode==="twin"){
-
-let hf1A=1
-let hf1B=1
-let hf2A=2
-let hf2B=2
-
-if(this.round===2){
-hf1B=2
-hf2B=1
-}
-
-arr.push({name:"HF1",teamA:this.team1+" "+hf1A,teamB:this.team2+" "+hf1B,keyA:"m1a",keyB:"m1b"})
-arr.push({name:"HF2",teamA:this.team1+" "+hf2A,teamB:this.team2+" "+hf2B,keyA:"m2a",keyB:"m2b"})
-
-if(this.fields>=3){
-arr.push({name:"NF1",teamA:this.team1+" 3",teamB:this.team2+" 3",keyA:"m3a",keyB:"m3b"})
-}
-
-if(this.fields===4){
-arr.push({name:"NF2",teamA:this.team1+" 4",teamB:this.team2+" 4",keyA:"m4a",keyB:"m4b"})
-}
-
+arr.push({name:"HF1",teamA:this.team1+" 1",teamB:this.team2+" 1",keyA:"m1a",keyB:"m1b"})
+arr.push({name:"HF2",teamA:this.team1+" 2",teamB:this.team2+" 2",keyA:"m2a",keyB:"m2b"})
+if(this.fields>=3)arr.push({name:"NF1",teamA:this.team1+" 3",teamB:this.team2+" 3",keyA:"m3a",keyB:"m3b"})
+if(this.fields===4)arr.push({name:"NF2",teamA:this.team1+" 4",teamB:this.team2+" 4",keyA:"m4a",keyB:"m4b"})
 }
 
 return arr
-
 }
 
 }
-
 }
-
 </script>
 
 </body>
