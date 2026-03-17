@@ -76,28 +76,31 @@
 </div>
 </div>
 
-<!-- STEP 4 Geräte -->
-<div x-show="step===4 && role==='master'" class="bg-white p-8 rounded-xl shadow">
+<!-- STEP 4 -->
+<div x-show="step===4" class="bg-white p-8 rounded-xl shadow">
 
 <h2 class="text-xl font-bold mb-4">Geräte verbinden</h2>
 
 <div class="grid grid-cols-2 gap-8">
-<div><div id="qrCounter"></div></div>
-<div><div id="qrViewer"></div></div>
+<div>
+<h3 class="font-bold mb-2">Counter</h3>
+<div id="qrCounter"></div>
+</div>
+
+<div>
+<h3 class="font-bold mb-2">Zuschauer</h3>
+<div id="qrViewer"></div>
+</div>
 </div>
 
 <div class="flex justify-between mt-6">
 <button @click="prev()" class="bg-gray-500 text-white px-6 py-2 rounded">Zurück</button>
-<button @click="startGame()" class="bg-green-600 text-white px-6 py-2 rounded">Weiter</button>
-</div>
-</div>
-
-<!-- AUTO SKIP für Counter/Viewer -->
-<div x-show="step===4 && role!=='master'">
-<div x-init="startGame()"></div>
+<button @click="startGame()" class="bg-green-600 text-white px-6 py-2 rounded">Spiel starten</button>
 </div>
 
-<!-- STEP 5 SPIEL -->
+</div>
+
+<!-- STEP 5 -->
 <div x-show="step===5">
 
 <template x-for="f in fieldList">
@@ -150,13 +153,25 @@ init(){
 const p=new URLSearchParams(location.search)
 this.role=p.get("role")||"master"
 
-if(this.role!=='master'){
-this.step=5
-}
+this.$nextTick(()=>this.createQR())
 },
 
-btn(active){
-return "px-4 py-2 rounded text-white "+(active?"bg-indigo-600":"bg-gray-400")
+createQR(){
+const base=location.origin+location.pathname
+
+new QRCode(document.getElementById("qrCounter"),{
+text:base+"?role=counter",
+width:120,height:120
+})
+
+new QRCode(document.getElementById("qrViewer"),{
+text:base+"?role=viewer",
+width:120,height:120
+})
+},
+
+btn(a){
+return "px-4 py-2 rounded text-white "+(a?"bg-indigo-600":"bg-gray-400")
 },
 
 next(){this.step++},
