@@ -39,23 +39,23 @@ window.dbOnValue=onValue
 
 <div x-data="app()" x-init="init()" class="max-w-6xl mx-auto space-y-8">
 
-<!-- MODUS -->
-<div x-show="step===0" class="bg-white p-8 rounded-2xl shadow text-center">
+<!-- STEP 0 -->
+<div x-show="step===0" class="bg-white p-8 rounded-xl shadow text-center">
 <h2 class="text-3xl font-bold mb-6">Spielmodus wählen</h2>
 
 <div class="grid grid-cols-2 gap-6">
-<button @click="mode='single'; next()" class="p-12 bg-blue-600 text-white text-2xl rounded-xl">Single</button>
-<button @click="mode='twin'; next()" class="p-12 bg-indigo-600 text-white text-2xl rounded-xl">Twin</button>
+<button @click="mode='single';next()" class="p-10 bg-blue-600 text-white text-2xl rounded-xl">Single</button>
+<button @click="mode='twin';next()" class="p-10 bg-indigo-600 text-white text-2xl rounded-xl">Twin</button>
 </div>
 </div>
 
-<!-- TEAMS -->
-<div x-show="step===1" class="bg-white p-8 rounded-2xl shadow">
-<h2 class="text-2xl font-bold mb-4">Teams</h2>
+<!-- STEP 1 -->
+<div x-show="step===1" class="bg-white p-8 rounded-xl shadow">
+<h2 class="text-xl font-bold mb-4">Teams</h2>
 
 <div class="grid grid-cols-2 gap-4">
-<input x-model="team1" placeholder="Team A" class="border p-3 rounded">
-<input x-model="team2" placeholder="Team B" class="border p-3 rounded">
+<input x-model="team1" class="border p-3 rounded" placeholder="Team A">
+<input x-model="team2" class="border p-3 rounded" placeholder="Team B">
 </div>
 
 <div class="flex justify-between mt-6">
@@ -64,11 +64,11 @@ window.dbOnValue=onValue
 </div>
 </div>
 
-<!-- ZEIT -->
-<div x-show="step===2" class="bg-white p-8 rounded-2xl shadow">
-<h2 class="text-2xl font-bold mb-4">Zeit</h2>
+<!-- STEP 2 -->
+<div x-show="step===2" class="bg-white p-8 rounded-xl shadow">
+<h2 class="text-xl font-bold mb-4">Zeit</h2>
 
-<input type="number" x-model.number="minutes" class="border p-3 rounded w-40">
+<input type="number" x-model.number="minutes" class="border p-3 rounded w-32">
 
 <div class="flex justify-between mt-6">
 <button @click="prev()" class="bg-gray-500 text-white px-6 py-2 rounded">Zurück</button>
@@ -76,14 +76,21 @@ window.dbOnValue=onValue
 </div>
 </div>
 
-<!-- FELDER -->
-<div x-show="step===3" class="bg-white p-8 rounded-2xl shadow">
-<h2 class="text-2xl font-bold mb-4">Spielfelder</h2>
+<!-- STEP 3 -->
+<div x-show="step===3" class="bg-white p-8 rounded-xl shadow">
+<h2 class="text-xl font-bold mb-4">Spielfelder</h2>
 
 <div class="flex gap-4">
-<button @click="fields=2" class="px-4 py-2 bg-indigo-500 text-white rounded">HF1 + HF2</button>
-<button @click="fields=3" class="px-4 py-2 bg-indigo-500 text-white rounded">+ NF1</button>
-<button @click="fields=4" class="px-4 py-2 bg-indigo-500 text-white rounded">+ NF2</button>
+
+<!-- SINGLE -->
+<button x-show="mode==='single'" @click="fields=1" :class="btn(fields===1)">HF</button>
+<button x-show="mode==='single'" @click="fields=2" :class="btn(fields===2)">HF + NF</button>
+
+<!-- TWIN -->
+<button x-show="mode==='twin'" @click="fields=2" :class="btn(fields===2)">HF1 + HF2</button>
+<button x-show="mode==='twin'" @click="fields=3" :class="btn(fields===3)">+ NF1</button>
+<button x-show="mode==='twin'" @click="fields=4" :class="btn(fields===4)">+ NF2</button>
+
 </div>
 
 <div class="flex justify-between mt-6">
@@ -92,43 +99,34 @@ window.dbOnValue=onValue
 </div>
 </div>
 
-<!-- GERÄTE -->
-<div x-show="step===4" class="bg-white p-8 rounded-2xl shadow">
-<h2 class="text-2xl font-bold mb-4">Geräte verbinden</h2>
+<!-- STEP 4 (NEU) -->
+<div x-show="step===4" class="bg-white p-8 rounded-xl shadow">
+<h2 class="text-xl font-bold mb-4">Geräte verbinden</h2>
 
 <div class="grid grid-cols-2 gap-8">
-<div>
-<h3 class="font-bold">Counter</h3>
-<div id="qrCounter"></div>
-</div>
-
-<div>
-<h3 class="font-bold">Zuschauer</h3>
-<div id="qrViewer"></div>
-</div>
+<div><div id="qrCounter"></div></div>
+<div><div id="qrViewer"></div></div>
 </div>
 
 <div class="flex justify-between mt-6">
 <button @click="prev()" class="bg-gray-500 text-white px-6 py-2 rounded">Zurück</button>
-<button @click="startGame()" class="bg-green-600 text-white px-6 py-2 rounded">Spiel starten</button>
+<button @click="startGame()" class="bg-green-600 text-white px-6 py-2 rounded">Weiter zur Begegnung</button>
 </div>
 </div>
 
-<!-- SPIEL -->
+<!-- STEP 5 SPIEL -->
 <div x-show="step===5">
-
-<div class="text-center text-4xl font-bold mb-6" x-text="timerDisplay"></div>
 
 <template x-for="f in fieldList">
 <div class="bg-white p-6 rounded-xl mb-4">
 
 <h3 class="font-bold mb-4" x-text="f.name"></h3>
 
-<div class="grid grid-cols-3 text-center items-center">
+<div class="grid grid-cols-3 text-center">
 
 <div>
-<button x-show="canEdit()" @click="dec(f.keyA)" class="bg-red-500 text-white w-16 h-16 text-2xl rounded">-</button>
-<button x-show="canEdit()" @click="inc(f.keyA)" class="bg-green-600 text-white w-16 h-16 text-2xl rounded">+</button>
+<button x-show="canEdit()" @click="dec(f.keyA)" class="bg-red-500 text-white w-16 h-16 rounded text-2xl">-</button>
+<button x-show="canEdit()" @click="inc(f.keyA)" class="bg-green-600 text-white w-16 h-16 rounded text-2xl">+</button>
 </div>
 
 <div class="text-3xl font-bold">
@@ -137,11 +135,12 @@ window.dbOnValue=onValue
 </div>
 
 <div>
-<button x-show="canEdit()" @click="dec(f.keyB)" class="bg-red-500 text-white w-16 h-16 text-2xl rounded">-</button>
-<button x-show="canEdit()" @click="inc(f.keyB)" class="bg-green-600 text-white w-16 h-16 text-2xl rounded">+</button>
+<button x-show="canEdit()" @click="dec(f.keyB)" class="bg-red-500 text-white w-16 h-16 rounded text-2xl">-</button>
+<button x-show="canEdit()" @click="inc(f.keyB)" class="bg-green-600 text-white w-16 h-16 rounded text-2xl">+</button>
 </div>
 
 </div>
+
 </div>
 </template>
 
@@ -151,61 +150,52 @@ window.dbOnValue=onValue
 
 <script>
 function app(){
-
 return{
 
 step:0,
 mode:null,
 team1:"",
 team2:"",
-fields:2,
+fields:0,
 minutes:10,
 
-scores:{m1a:0,m1b:0,m2a:0,m2b:0},
+scores:{m1a:0,m1b:0,m2a:0,m2b:0,m3a:0,m3b:0,m4a:0,m4b:0},
 
 role:"master",
 sessionId:"liveSpiel",
 
-timerDisplay:"00:00",
-
 init(){
-
-const params=new URLSearchParams(window.location.search)
-this.role=params.get("role")||"master"
-
+const p=new URLSearchParams(location.search)
+this.role=p.get("role")||"master"
 this.createQR()
-
 this.listenFirebase()
-
 },
 
-createQR(){
-
-const base="https://fs170489-bye.github.io/spieltag/"
-
-new QRCode(document.getElementById("qrCounter"),{
-text:base+"?session="+this.sessionId+"&role=counter",
-width:150,
-height:150
-})
-
-new QRCode(document.getElementById("qrViewer"),{
-text:base+"?session="+this.sessionId+"&role=viewer",
-width:150,
-height:150
-})
-
-},
-
-canEdit(){
-return this.role==="master" || this.role==="counter"
+btn(active){
+return "px-4 py-2 rounded text-white "+(active?"bg-indigo-600":"bg-gray-400")
 },
 
 next(){this.step++},
 prev(){this.step--},
 
-startGame(){
-this.step=5
+startGame(){this.step=5},
+
+canEdit(){
+return this.role==="master" || this.role==="counter"
+},
+
+createQR(){
+const base=location.origin+location.pathname
+
+new QRCode(document.getElementById("qrCounter"),{
+text:base+"?role=counter",
+width:120,height:120
+})
+
+new QRCode(document.getElementById("qrViewer"),{
+text:base+"?role=viewer",
+width:120,height:120
+})
 },
 
 inc(k){
@@ -225,22 +215,35 @@ scores:this.scores
 },
 
 listenFirebase(){
-dbOnValue(dbRef(db,"spiele/"+this.sessionId),(snap)=>{
-const d=snap.val()
+dbOnValue(dbRef(db,"spiele/"+this.sessionId),(s)=>{
+let d=s.val()
 if(!d)return
 this.scores=d.scores
 })
 },
 
 get fieldList(){
-return[
-{name:"HF1",keyA:"m1a",keyB:"m1b"},
-{name:"HF2",keyA:"m2a",keyB:"m2b"}
-]
+
+let arr=[]
+
+if(this.mode==="single"){
+arr.push({name:"HF1",keyA:"m1a",keyB:"m1b"})
+if(this.fields===2){
+arr.push({name:"NF",keyA:"m2a",keyB:"m2b"})
+}
+}
+
+if(this.mode==="twin"){
+arr.push({name:"HF1",keyA:"m1a",keyB:"m1b"})
+arr.push({name:"HF2",keyA:"m2a",keyB:"m2b"})
+if(this.fields>=3)arr.push({name:"NF1",keyA:"m3a",keyB:"m3b"})
+if(this.fields===4)arr.push({name:"NF2",keyA:"m4a",keyB:"m4b"})
+}
+
+return arr
 }
 
 }
-
 }
 </script>
 
