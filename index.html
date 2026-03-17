@@ -1,282 +1,4 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NFV Scoreboard</title>
-
-<script src="https://cdn.tailwindcss.com"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js";
-
-const firebaseConfig = {
- apiKey: "AIzaSyDwj4kaT6VFJgrPg457Cq8AVrcG6jQTRl0",
- authDomain: "nfv-scoreboard.firebaseapp.com",
- databaseURL: "https://nfv-scoreboard-default-rtdb.europe-west1.firebasedatabase.app",
- projectId: "nfv-scoreboard",
- storageBucket: "nfv-scoreboard.firebasestorage.app",
- messagingSenderId: "727289331208",
- appId: "1:727289331208:web:de5e36f52c6d82b56ddbbd"
-};
-
-const firebaseApp = initializeApp(firebaseConfig);
-const db = getDatabase(firebaseApp);
-
-window.db=db
-window.dbRef=ref
-window.dbSet=set
-window.dbOnValue=onValue
-</script>
-
-</head>
-
-
-<body class="bg-slate-100 min-h-screen p-6 font-sans">
-
-<div x-data="app()" x-init="init()" class="max-w-6xl mx-auto space-y-8">
-
-
-<!-- TIMER -->
-
-<div class="bg-slate-900 text-white p-6 rounded-2xl text-center">
-
-<div class="text-xs opacity-70">SPIELZEIT</div>
-
-<div class="text-6xl font-mono"
-:class="{'animate-pulse text-red-500': timeLeft<=60}"
-x-text="timerDisplay"></div>
-
-<div class="mt-3 text-2xl font-bold">
-
-<span x-text="team1"></span>
-
-<span class="mx-2" x-text="pointsA"></span>
-
-:
-
-<span class="mx-2" x-text="pointsB"></span>
-
-<span x-text="team2"></span>
-
-</div>
-
-<div class="flex gap-3 justify-center mt-4">
-
-<button @click="testTimer()" class="px-4 py-2 bg-purple-500 rounded text-white">
-Test 10s
-</button>
-
-<button @click="startPauseTimer()" class="px-6 py-2 bg-green-500 rounded text-white">
-Start / Pause
-</button>
-
-<button @click="resetTimer()" class="px-6 py-2 bg-yellow-500 rounded text-white">
-Reset
-</button>
-
-</div>
-
-</div>
-
-
-<!-- MODUS -->
-
-<div x-show="step===0" class="bg-white p-8 rounded-2xl shadow text-center">
-
-<h2 class="text-3xl font-bold mb-6">Spielmodus wählen</h2>
-
-<div class="grid grid-cols-2 gap-6">
-
-<button @click="mode='single'; next()"
-class="p-12 bg-blue-600 text-white text-2xl font-bold rounded-xl">
-Single
-</button>
-
-<button @click="mode='twin'; next()"
-class="p-12 bg-indigo-600 text-white text-2xl font-bold rounded-xl">
-Twin
-</button>
-
-</div>
-
-</div>
-
-
-<!-- TEAM INPUT -->
-
-<div x-show="step===1" class="bg-white p-8 rounded-2xl shadow">
-
-<h2 class="text-2xl font-bold mb-4">Teams eingeben</h2>
-
-<div class="grid grid-cols-2 gap-4">
-
-<input x-model="team1" placeholder="Team A" class="border p-3 rounded">
-<input x-model="team2" placeholder="Team B" class="border p-3 rounded">
-
-</div>
-
-<div class="flex justify-between mt-6">
-
-<button @click="prev()" class="px-6 py-2 bg-gray-500 text-white rounded">
-Zurück
-</button>
-
-<button @click="next()" :disabled="!team1 || !team2"
-class="px-6 py-2 bg-indigo-600 text-white rounded">
-Weiter
-</button>
-
-</div>
-
-</div>
-
-
-<!-- ZEIT -->
-
-<div x-show="step===2" class="bg-white p-8 rounded-2xl shadow">
-
-<h2 class="text-2xl font-bold mb-4">Zeit einstellen</h2>
-
-<input type="number" x-model.number="minutes"
-class="border p-3 rounded w-40 text-xl">
-
-<div class="flex justify-between mt-6">
-
-<button @click="prev()" class="px-6 py-2 bg-gray-500 text-white rounded">
-Zurück
-</button>
-
-<button @click="next()" class="px-6 py-2 bg-indigo-600 text-white rounded">
-Weiter
-</button>
-
-</div>
-
-</div>
-
-
-<!-- FELDER -->
-
-<div x-show="step===3" class="bg-white p-8 rounded-2xl shadow">
-
-<h2 class="text-2xl font-bold mb-4">Spielfeld wählen</h2>
-
-<div class="flex gap-4">
-
-<button x-show="mode==='single'" @click="fields=1" :class="fieldBtn(1)">HF</button>
-<button x-show="mode==='single'" @click="fields=2" :class="fieldBtn(2)">HF + NF</button>
-
-<button x-show="mode==='twin'" @click="fields=2" :class="fieldBtn(2)">HF1 + HF2</button>
-<button x-show="mode==='twin'" @click="fields=3" :class="fieldBtn(3)">HF1 + HF2 + NF1</button>
-<button x-show="mode==='twin'" @click="fields=4" :class="fieldBtn(4)">HF1 + HF2 + NF1 + NF2</button>
-
-</div>
-
-<div class="flex justify-between mt-6">
-
-<button @click="prev()" class="px-6 py-2 bg-gray-500 text-white rounded">
-Zurück
-</button>
-
-<button @click="goDevices()" :disabled="fields===0"
-class="px-6 py-2 bg-green-600 text-white rounded">
-Weiter
-</button>
-
-</div>
-
-</div>
-
-
-<!-- GERÄTE -->
-
-<div x-show="step===6" class="bg-white p-8 rounded-2xl shadow">
-
-<h2 class="text-2xl font-bold mb-4">Geräte verbinden</h2>
-
-<div class="grid md:grid-cols-2 gap-10 text-center">
-
-<div>
-<h3 class="font-bold mb-2">Counter</h3>
-<div id="qrCounter"></div>
-<p class="text-sm mt-2 text-gray-500">max. 6 Geräte</p>
-</div>
-
-<div>
-<h3 class="font-bold mb-2">Zuschauer</h3>
-<div id="qrViewer"></div>
-<p class="text-sm mt-2 text-gray-500">max. 10 Geräte</p>
-</div>
-
-</div>
-
-<div class="flex justify-between mt-8">
-
-<button @click="step=3"
-class="px-6 py-2 bg-gray-500 text-white rounded">
-Zurück
-</button>
-
-<button @click="startGame()"
-class="px-6 py-2 bg-green-600 text-white rounded">
-Weiter zur Begegnung
-</button>
-
-</div>
-
-</div>
-
-
-<!-- SPIEL -->
-
-<div x-show="step===4" class="space-y-6">
-<h2 class="text-3xl font-bold">
-Begegnung <span x-text="round"></span> / 3
-</h2>
-
-<template x-for="f in fieldList">
-<div class="bg-white p-6 rounded-2xl shadow">
-
-<h3 class="font-bold mb-2" x-text="f.name"></h3>
-
-<div class="grid grid-cols-3 text-center items-center">
-
-<div>
-<button @click="dec(f.keyA)" :disabled="timeLeft===0"
-class="w-20 h-20 text-4xl bg-red-500 text-white rounded-xl">−</button>
-
-<button @click="inc(f.keyA)" :disabled="timeLeft===0"
-class="w-20 h-20 text-4xl bg-green-600 text-white rounded-xl">+</button>
-</div>
-
-<div class="text-5xl font-bold">
-<span x-text="scores[f.keyA]"></span> :
-<span x-text="scores[f.keyB]"></span>
-</div>
-
-<div>
-<button @click="dec(f.keyB)" :disabled="timeLeft===0"
-class="w-20 h-20 text-4xl bg-red-500 text-white rounded-xl">−</button>
-
-<button @click="inc(f.keyB)" :disabled="timeLeft===0"
-class="w-20 h-20 text-4xl bg-green-600 text-white rounded-xl">+</button>
-</div>
-
-</div>
-
-</div>
-</template>
-
-</div>
-
-
-</div>
-
+<!-- NUR SCRIPT TEIL GEÄNDERT – REST BLEIBT WIE BEI DIR -->
 
 <script>
 function app(){
@@ -284,7 +6,6 @@ function app(){
 return{
 
 role:"master",
-
 sessionId:"liveSpiel",
 
 mode:null,
@@ -292,7 +13,6 @@ step:0,
 
 team1:"",
 team2:"",
-
 fields:0,
 
 round:1,
@@ -308,55 +28,119 @@ timer:null,
 timerDisplay:"00:00",
 
 init(){
+
 const params = new URLSearchParams(window.location.search)
+
 this.role = params.get("role") || "master"
+this.sessionId = params.get("session") || "liveSpiel"
+
+// 👉 WICHTIG: Counter & Viewer direkt ins Spiel
+if(this.role !== "master"){
+this.step = 4
+}
+
 this.listenFirebase()
 },
+
+// -------------------- FIREBASE --------------------
+
+syncFirebase(){
+
+// nur Master darf schreiben
+if(this.role !== "master") return
+
+dbSet(dbRef(db,"spiele/"+this.sessionId),{
+mode:this.mode,
+round:this.round,
+scores:this.scores,
+timeLeft:this.timeLeft,
+pointsA:this.pointsA,
+pointsB:this.pointsB,
+team1:this.team1,
+team2:this.team2,
+fields:this.fields
+})
+
+},
+
+listenFirebase(){
+
+dbOnValue(dbRef(db,"spiele/"+this.sessionId),(snapshot)=>{
+
+const data=snapshot.val()
+if(!data)return
+
+this.mode=data.mode
+this.round=data.round
+this.scores=data.scores || this.scores
+this.timeLeft=data.timeLeft || 0
+this.pointsA=data.pointsA || 0
+this.pointsB=data.pointsB || 0
+this.team1=data.team1 || ""
+this.team2=data.team2 || ""
+this.fields=data.fields || 0
+
+this.updateDisplay()
+
+})
+
+},
+
+// -------------------- NAV --------------------
+
+next(){this.step++},
+prev(){if(this.step>0)this.step--},
 
 goDevices(){
 this.step=6
 this.$nextTick(()=>this.createQR())
 },
 
-createQR(){
-const base = window.location.origin + window.location.pathname
-
-document.getElementById("qrCounter").innerHTML=""
-document.getElementById("qrViewer").innerHTML=""
-
-new QRCode(document.getElementById("qrCounter"),{
-text: base + "?role=counter",
-width:180,
-height:180
-})
-
-new QRCode(document.getElementById("qrViewer"),{
-text: base + "?role=viewer",
-width:180,
-height:180
-})
-},
-
-// REST BLEIBT UNVERÄNDERT
-
-next(){this.step++},
-prev(){if(this.step>0)this.step--},
-
 startGame(){
 this.timeLeft=this.minutes*60
 this.updateDisplay()
 this.step=4
-},
-
-inc(k){
-if(this.timeLeft===0)return
-this.scores[k]++
 this.syncFirebase()
 },
 
-dec(k){
-if(this.timeLeft===0)return
-if(this.scores[k]>0)this.scores[k]--
+// -------------------- TIMER --------------------
+
+testTimer(){
+if(this.role!=="master") return
+this.timeLeft=10
+this.updateDisplay()
+this.syncFirebase()
+},
+
+startPauseTimer(){
+
+if(this.role!=="master") return
+
+if(this.timer){
+clearInterval(this.timer)
+this.timer=null
+return
+}
+
+this.timer=setInterval(()=>{
+
+if(this.timeLeft>0){
+this.timeLeft--
+this.updateDisplay()
+this.syncFirebase()
+}else{
+clearInterval(this.timer)
+this.timer=null
+}
+
+},1000)
+
+},
+
+resetTimer(){
+if(this.role!=="master") return
+this.timeLeft=this.minutes*60
+this.updateDisplay()
 this.syncFirebase()
 },
 
@@ -366,13 +150,64 @@ let s=this.timeLeft%60
 this.timerDisplay=m.toString().padStart(2,"0")+":"+s.toString().padStart(2,"0")
 },
 
+// -------------------- SCORE --------------------
+
+canEdit(){
+
+// Counter nur wenn Zeit läuft
+if(this.role==="counter"){
+return this.timeLeft > 0
+}
+
+// Master immer
+if(this.role==="master"){
+return true
+}
+
+return false
+
+},
+
+inc(k){
+if(!this.canEdit()) return
+this.scores[k]++
+this.syncFirebase()
+},
+
+dec(k){
+if(!this.canEdit()) return
+if(this.scores[k]>0)this.scores[k]--
+this.syncFirebase()
+},
+
+// -------------------- QR --------------------
+
+createQR(){
+
+const base = window.location.origin + window.location.pathname
+
+document.getElementById("qrCounter").innerHTML=""
+document.getElementById("qrViewer").innerHTML=""
+
+new QRCode(document.getElementById("qrCounter"),{
+text: base + "?session="+this.sessionId+"&role=counter",
+width:180,
+height:180
+})
+
+new QRCode(document.getElementById("qrViewer"),{
+text: base + "?session="+this.sessionId+"&role=viewer",
+width:180,
+height:180
+})
+
+},
+
+// -------------------- UI --------------------
+
 fieldBtn(n){
 return "px-5 py-3 rounded text-white "+(this.fields===n?"bg-indigo-600":"bg-gray-400")
 },
-
-listenFirebase(){},
-
-syncFirebase(){},
 
 get fieldList(){
 
@@ -398,6 +233,3 @@ return arr
 }
 }
 </script>
-
-</body>
-</html>
