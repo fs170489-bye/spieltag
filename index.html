@@ -1,235 +1,191 @@
-<!-- NUR SCRIPT TEIL GEÄNDERT – REST BLEIBT WIE BEI DIR -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NFV Scoreboard</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js";
+
+const firebaseConfig = {
+ apiKey: "AIzaSyDwj4kaT6VFJgrPg457Cq8AVrcG6jQTRl0",
+ authDomain: "nfv-scoreboard.firebaseapp.com",
+ databaseURL: "https://nfv-scoreboard-default-rtdb.europe-west1.firebasedatabase.app",
+ projectId: "nfv-scoreboard",
+ storageBucket: "nfv-scoreboard.firebasestorage.app",
+ messagingSenderId: "727289331208",
+ appId: "1:727289331208:web:de5e36f52c6d82b56ddbbd"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getDatabase(firebaseApp);
+
+window.db=db
+window.dbRef=ref
+window.dbSet=set
+window.dbOnValue=onValue
+</script>
+
+</head>
+
+<body class="bg-slate-100 min-h-screen p-6 font-sans">
+
+<div x-data="app()" x-init="init()" class="max-w-6xl mx-auto space-y-8">
+
+<!-- TIMER -->
+<div class="bg-slate-900 text-white p-6 rounded-2xl text-center">
+<div class="text-xs opacity-70">SPIELZEIT</div>
+<div class="text-6xl font-mono" x-text="timerDisplay"></div>
+</div>
+
+<!-- MODUS -->
+<div x-show="step===0" class="bg-white p-8 rounded-2xl shadow text-center">
+<h2 class="text-3xl font-bold mb-6">Spielmodus wählen</h2>
+<div class="grid grid-cols-2 gap-6">
+<button @click="mode='single'; next()" class="p-12 bg-blue-600 text-white text-2xl rounded-xl">Single</button>
+<button @click="mode='twin'; next()" class="p-12 bg-indigo-600 text-white text-2xl rounded-xl">Twin</button>
+</div>
+</div>
+
+<!-- TEAM -->
+<div x-show="step===1" class="bg-white p-8 rounded-2xl shadow">
+<input x-model="team1" placeholder="Team A" class="border p-3 rounded">
+<input x-model="team2" placeholder="Team B" class="border p-3 rounded mt-2">
+<div class="flex justify-between mt-4">
+<button @click="prev()">Zurück</button>
+<button @click="next()">Weiter</button>
+</div>
+</div>
+
+<!-- ZEIT -->
+<div x-show="step===2" class="bg-white p-8 rounded-2xl shadow">
+<input type="number" x-model.number="minutes">
+<button @click="next()">Weiter</button>
+</div>
+
+<!-- FELDER -->
+<div x-show="step===3" class="bg-white p-8 rounded-2xl shadow">
+<button @click="fields=1">HF</button>
+<button @click="fields=2">HF+NF</button>
+<button @click="goDevices()">Weiter</button>
+</div>
+
+<!-- GERÄTE -->
+<div x-show="step===6" class="bg-white p-8 rounded-2xl shadow text-center">
+<div id="qrCounter"></div>
+<div id="qrViewer"></div>
+<button @click="startGame()">Start</button>
+</div>
+
+<!-- SPIEL -->
+<div x-show="step===4">
+<div class="text-4xl" x-text="team1 + ' vs ' + team2"></div>
+
+<button x-show="canEdit()" @click="inc('m1a')">+</button>
+<span x-text="scores.m1a"></span>
+<button x-show="canEdit()" @click="dec('m1a')">-</button>
+
+</div>
+
+</div>
 
 <script>
 function app(){
-
 return{
 
 role:"master",
 sessionId:"liveSpiel",
 
-mode:null,
 step:0,
-
+mode:null,
 team1:"",
 team2:"",
+minutes:10,
 fields:0,
 
-round:1,
-minutes:10,
-
-scores:{m1a:0,m1b:0,m2a:0,m2b:0,m3a:0,m3b:0,m4a:0,m4b:0},
-
-pointsA:0,
-pointsB:0,
+scores:{m1a:0},
 
 timeLeft:0,
-timer:null,
 timerDisplay:"00:00",
 
 init(){
+const p=new URLSearchParams(location.search)
+this.role=p.get("role")||"master"
+this.sessionId=p.get("session")||"liveSpiel"
 
-const params = new URLSearchParams(window.location.search)
-
-this.role = params.get("role") || "master"
-this.sessionId = params.get("session") || "liveSpiel"
-
-// 👉 WICHTIG: Counter & Viewer direkt ins Spiel
-if(this.role !== "master"){
-this.step = 4
+if(this.role!=="master"){
+this.step=4
 }
 
 this.listenFirebase()
 },
-
-// -------------------- FIREBASE --------------------
-
-syncFirebase(){
-
-// nur Master darf schreiben
-if(this.role !== "master") return
-
-dbSet(dbRef(db,"spiele/"+this.sessionId),{
-mode:this.mode,
-round:this.round,
-scores:this.scores,
-timeLeft:this.timeLeft,
-pointsA:this.pointsA,
-pointsB:this.pointsB,
-team1:this.team1,
-team2:this.team2,
-fields:this.fields
-})
-
-},
-
-listenFirebase(){
-
-dbOnValue(dbRef(db,"spiele/"+this.sessionId),(snapshot)=>{
-
-const data=snapshot.val()
-if(!data)return
-
-this.mode=data.mode
-this.round=data.round
-this.scores=data.scores || this.scores
-this.timeLeft=data.timeLeft || 0
-this.pointsA=data.pointsA || 0
-this.pointsB=data.pointsB || 0
-this.team1=data.team1 || ""
-this.team2=data.team2 || ""
-this.fields=data.fields || 0
-
-this.updateDisplay()
-
-})
-
-},
-
-// -------------------- NAV --------------------
-
-next(){this.step++},
-prev(){if(this.step>0)this.step--},
 
 goDevices(){
 this.step=6
 this.$nextTick(()=>this.createQR())
 },
 
-startGame(){
-this.timeLeft=this.minutes*60
-this.updateDisplay()
-this.step=4
-this.syncFirebase()
+createQR(){
+const base=location.origin+location.pathname
+document.getElementById("qrCounter").innerHTML=""
+document.getElementById("qrViewer").innerHTML=""
+
+new QRCode(document.getElementById("qrCounter"),{
+text:base+"?session="+this.sessionId+"&role=counter"
+})
+
+new QRCode(document.getElementById("qrViewer"),{
+text:base+"?session="+this.sessionId+"&role=viewer"
+})
 },
-
-// -------------------- TIMER --------------------
-
-testTimer(){
-if(this.role!=="master") return
-this.timeLeft=10
-this.updateDisplay()
-this.syncFirebase()
-},
-
-startPauseTimer(){
-
-if(this.role!=="master") return
-
-if(this.timer){
-clearInterval(this.timer)
-this.timer=null
-return
-}
-
-this.timer=setInterval(()=>{
-
-if(this.timeLeft>0){
-this.timeLeft--
-this.updateDisplay()
-this.syncFirebase()
-}else{
-clearInterval(this.timer)
-this.timer=null
-}
-
-},1000)
-
-},
-
-resetTimer(){
-if(this.role!=="master") return
-this.timeLeft=this.minutes*60
-this.updateDisplay()
-this.syncFirebase()
-},
-
-updateDisplay(){
-let m=Math.floor(this.timeLeft/60)
-let s=this.timeLeft%60
-this.timerDisplay=m.toString().padStart(2,"0")+":"+s.toString().padStart(2,"0")
-},
-
-// -------------------- SCORE --------------------
 
 canEdit(){
-
-// Counter nur wenn Zeit läuft
-if(this.role==="counter"){
-return this.timeLeft > 0
-}
-
-// Master immer
-if(this.role==="master"){
-return true
-}
-
-return false
-
+return this.role==="master"||this.role==="counter"
 },
 
 inc(k){
-if(!this.canEdit()) return
 this.scores[k]++
 this.syncFirebase()
 },
 
 dec(k){
-if(!this.canEdit()) return
 if(this.scores[k]>0)this.scores[k]--
 this.syncFirebase()
 },
 
-// -------------------- QR --------------------
-
-createQR(){
-
-const base = window.location.origin + window.location.pathname
-
-document.getElementById("qrCounter").innerHTML=""
-document.getElementById("qrViewer").innerHTML=""
-
-new QRCode(document.getElementById("qrCounter"),{
-text: base + "?session="+this.sessionId+"&role=counter",
-width:180,
-height:180
+syncFirebase(){
+if(this.role!=="master")return
+dbSet(dbRef(db,"spiele/"+this.sessionId),{
+scores:this.scores,
+team1:this.team1,
+team2:this.team2
 })
-
-new QRCode(document.getElementById("qrViewer"),{
-text: base + "?session="+this.sessionId+"&role=viewer",
-width:180,
-height:180
-})
-
 },
 
-// -------------------- UI --------------------
-
-fieldBtn(n){
-return "px-5 py-3 rounded text-white "+(this.fields===n?"bg-indigo-600":"bg-gray-400")
+listenFirebase(){
+dbOnValue(dbRef(db,"spiele/"+this.sessionId),(snap)=>{
+let d=snap.val()
+if(!d)return
+this.scores=d.scores||this.scores
+this.team1=d.team1||this.team1
+this.team2=d.team2||this.team2
+})
 },
 
-get fieldList(){
-
-let arr=[]
-
-if(this.mode==="single"){
-arr.push({name:"HF1",teamA:this.team1,teamB:this.team2,keyA:"m1a",keyB:"m1b"})
-if(this.fields===2){
-arr.push({name:"NF",teamA:this.team1,teamB:this.team2,keyA:"m2a",keyB:"m2b"})
-}
-}
-
-if(this.mode==="twin"){
-arr.push({name:"HF1",teamA:this.team1+" 1",teamB:this.team2+" 1",keyA:"m1a",keyB:"m1b"})
-arr.push({name:"HF2",teamA:this.team1+" 2",teamB:this.team2+" 2",keyA:"m2a",keyB:"m2b"})
-if(this.fields>=3)arr.push({name:"NF1",teamA:this.team1+" 3",teamB:this.team2+" 3",keyA:"m3a",keyB:"m3b"})
-if(this.fields===4)arr.push({name:"NF2",teamA:this.team1+" 4",teamB:this.team2+" 4",keyA:"m4a",keyB:"m4b"})
-}
-
-return arr
-}
+next(){this.step++},
+prev(){this.step--},
+startGame(){this.step=4}
 
 }
 }
 </script>
+
+</body>
+</html>
