@@ -8,9 +8,12 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+<!-- NEU -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js";
 
@@ -31,38 +34,48 @@ window.db=db
 window.dbRef=ref
 window.dbSet=set
 window.dbOnValue=onValue
+
 </script>
 
 </head>
+
 
 <body class="bg-slate-100 min-h-screen p-6 font-sans">
 
 <div x-data="app()" x-init="init()" class="max-w-6xl mx-auto space-y-8">
 
+
 <!-- TIMER -->
 <div class="bg-slate-900 text-white p-6 rounded-2xl text-center">
 <div class="text-xs opacity-70">SPIELZEIT</div>
-<div class="text-6xl font-mono" x-text="timerDisplay"></div>
+<div class="text-6xl font-mono"
+:class="{'animate-pulse text-red-500': timeLeft<=60}"
+x-text="timerDisplay"></div>
 </div>
+
 
 <!-- MODUS -->
 <div x-show="step===0" class="bg-white p-8 rounded-2xl shadow text-center">
 <h2 class="text-3xl font-bold mb-6">Spielmodus wählen</h2>
+
 <div class="grid grid-cols-2 gap-6">
-<button @click="mode='single'; next()" class="p-12 bg-blue-600 text-white text-2xl rounded-xl">Single</button>
-<button @click="mode='twin'; next()" class="p-12 bg-indigo-600 text-white text-2xl rounded-xl">Twin</button>
+<button @click="mode='single'; next()" class="p-12 bg-blue-600 text-white text-2xl font-bold rounded-xl">Single</button>
+<button @click="mode='twin'; next()" class="p-12 bg-indigo-600 text-white text-2xl font-bold rounded-xl">Twin</button>
 </div>
 </div>
+
 
 <!-- TEAM -->
 <div x-show="step===1" class="bg-white p-8 rounded-2xl shadow">
 <input x-model="team1" placeholder="Team A" class="border p-3 rounded">
 <input x-model="team2" placeholder="Team B" class="border p-3 rounded mt-2">
+
 <div class="flex justify-between mt-4">
 <button @click="prev()">Zurück</button>
 <button @click="next()">Weiter</button>
 </div>
 </div>
+
 
 <!-- ZEIT -->
 <div x-show="step===2" class="bg-white p-8 rounded-2xl shadow">
@@ -70,45 +83,73 @@ window.dbOnValue=onValue
 <button @click="next()">Weiter</button>
 </div>
 
+
 <!-- FELDER -->
 <div x-show="step===3" class="bg-white p-8 rounded-2xl shadow">
-<button @click="fields=1">HF</button>
-<button @click="fields=2">HF+NF</button>
+
+<button x-show="mode==='single'" @click="fields=1">HF</button>
+<button x-show="mode==='single'" @click="fields=2">HF+NF</button>
+
+<button x-show="mode==='twin'" @click="fields=2">HF1+HF2</button>
+<button x-show="mode==='twin'" @click="fields=3">+NF1</button>
+<button x-show="mode==='twin'" @click="fields=4">+NF2</button>
+
+<!-- geändert -->
 <button @click="goDevices()">Weiter</button>
+
 </div>
 
-<!-- GERÄTE -->
+
+<!-- NEU: GERÄTE -->
 <div x-show="step===6" class="bg-white p-8 rounded-2xl shadow text-center">
+
+<h2 class="text-xl font-bold mb-4">Geräte verbinden</h2>
+
+<div class="grid grid-cols-2 gap-8">
+<div>
 <div id="qrCounter"></div>
-<div id="qrViewer"></div>
-<button @click="startGame()">Start</button>
+<p>Counter</p>
 </div>
+
+<div>
+<div id="qrViewer"></div>
+<p>Zuschauer</p>
+</div>
+</div>
+
+<button @click="startGame()">Weiter zur Begegnung</button>
+
+</div>
+
 
 <!-- SPIEL -->
 <div x-show="step===4">
-<div class="text-4xl" x-text="team1 + ' vs ' + team2"></div>
+<div class="text-3xl font-bold mb-4" x-text="team1 + ' vs ' + team2"></div>
 
-<button x-show="canEdit()" @click="inc('m1a')">+</button>
+<button @click="inc('m1a')">+</button>
 <span x-text="scores.m1a"></span>
-<button x-show="canEdit()" @click="dec('m1a')">-</button>
+<button @click="dec('m1a')">-</button>
 
 </div>
 
 </div>
+
 
 <script>
+
 function app(){
+
 return{
 
+// NEU
 role:"master",
-sessionId:"liveSpiel",
 
 step:0,
 mode:null,
 team1:"",
 team2:"",
-minutes:10,
 fields:0,
+minutes:10,
 
 scores:{m1a:0},
 
@@ -116,75 +157,48 @@ timeLeft:0,
 timerDisplay:"00:00",
 
 init(){
-const p=new URLSearchParams(location.search)
-this.role=p.get("role")||"master"
-this.sessionId=p.get("session")||"liveSpiel"
 
-if(this.role!=="master"){
-this.step=4
-}
+const params = new URLSearchParams(window.location.search)
+this.role = params.get("role") || "master"
 
-this.listenFirebase()
 },
 
+// NEU
 goDevices(){
 this.step=6
 this.$nextTick(()=>this.createQR())
 },
 
+// NEU
 createQR(){
-const base=location.origin+location.pathname
+
+const base = window.location.origin + window.location.pathname
+
 document.getElementById("qrCounter").innerHTML=""
 document.getElementById("qrViewer").innerHTML=""
 
 new QRCode(document.getElementById("qrCounter"),{
-text:base+"?session="+this.sessionId+"&role=counter"
+text: base + "?role=counter"
 })
 
 new QRCode(document.getElementById("qrViewer"),{
-text:base+"?session="+this.sessionId+"&role=viewer"
+text: base + "?role=viewer"
 })
-},
 
-canEdit(){
-return this.role==="master"||this.role==="counter"
-},
-
-inc(k){
-this.scores[k]++
-this.syncFirebase()
-},
-
-dec(k){
-if(this.scores[k]>0)this.scores[k]--
-this.syncFirebase()
-},
-
-syncFirebase(){
-if(this.role!=="master")return
-dbSet(dbRef(db,"spiele/"+this.sessionId),{
-scores:this.scores,
-team1:this.team1,
-team2:this.team2
-})
-},
-
-listenFirebase(){
-dbOnValue(dbRef(db,"spiele/"+this.sessionId),(snap)=>{
-let d=snap.val()
-if(!d)return
-this.scores=d.scores||this.scores
-this.team1=d.team1||this.team1
-this.team2=d.team2||this.team2
-})
 },
 
 next(){this.step++},
 prev(){this.step--},
-startGame(){this.step=4}
+
+startGame(){this.step=4},
+
+inc(k){this.scores[k]++},
+dec(k){if(this.scores[k]>0)this.scores[k]--}
 
 }
+
 }
+
 </script>
 
 </body>
