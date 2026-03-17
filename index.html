@@ -11,7 +11,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js";
 
@@ -32,7 +31,6 @@ window.db=db
 window.dbRef=ref
 window.dbSet=set
 window.dbOnValue=onValue
-
 </script>
 
 </head>
@@ -41,139 +39,143 @@ window.dbOnValue=onValue
 
 <div x-data="app()" x-init="init()" class="max-w-6xl mx-auto space-y-8">
 
-<!-- GERÄTE VERBINDEN -->
-
-<div x-show="role==='master'" class="bg-white p-6 rounded-xl shadow">
-
-<h2 class="text-xl font-bold mb-4">Geräte verbinden</h2>
+<!-- MODUS -->
+<div x-show="step===0" class="bg-white p-8 rounded-2xl shadow text-center">
+<h2 class="text-3xl font-bold mb-6">Spielmodus wählen</h2>
 
 <div class="grid grid-cols-2 gap-6">
+<button @click="mode='single'; next()" class="p-12 bg-blue-600 text-white text-2xl rounded-xl">Single</button>
+<button @click="mode='twin'; next()" class="p-12 bg-indigo-600 text-white text-2xl rounded-xl">Twin</button>
+</div>
+</div>
 
+<!-- TEAMS -->
+<div x-show="step===1" class="bg-white p-8 rounded-2xl shadow">
+<h2 class="text-2xl font-bold mb-4">Teams</h2>
+
+<div class="grid grid-cols-2 gap-4">
+<input x-model="team1" placeholder="Team A" class="border p-3 rounded">
+<input x-model="team2" placeholder="Team B" class="border p-3 rounded">
+</div>
+
+<div class="flex justify-between mt-6">
+<button @click="prev()" class="bg-gray-500 text-white px-6 py-2 rounded">Zurück</button>
+<button @click="next()" class="bg-indigo-600 text-white px-6 py-2 rounded">Weiter</button>
+</div>
+</div>
+
+<!-- ZEIT -->
+<div x-show="step===2" class="bg-white p-8 rounded-2xl shadow">
+<h2 class="text-2xl font-bold mb-4">Zeit</h2>
+
+<input type="number" x-model.number="minutes" class="border p-3 rounded w-40">
+
+<div class="flex justify-between mt-6">
+<button @click="prev()" class="bg-gray-500 text-white px-6 py-2 rounded">Zurück</button>
+<button @click="next()" class="bg-indigo-600 text-white px-6 py-2 rounded">Weiter</button>
+</div>
+</div>
+
+<!-- FELDER -->
+<div x-show="step===3" class="bg-white p-8 rounded-2xl shadow">
+<h2 class="text-2xl font-bold mb-4">Spielfelder</h2>
+
+<div class="flex gap-4">
+<button @click="fields=2" class="px-4 py-2 bg-indigo-500 text-white rounded">HF1 + HF2</button>
+<button @click="fields=3" class="px-4 py-2 bg-indigo-500 text-white rounded">+ NF1</button>
+<button @click="fields=4" class="px-4 py-2 bg-indigo-500 text-white rounded">+ NF2</button>
+</div>
+
+<div class="flex justify-between mt-6">
+<button @click="prev()" class="bg-gray-500 text-white px-6 py-2 rounded">Zurück</button>
+<button @click="next()" class="bg-green-600 text-white px-6 py-2 rounded">Weiter</button>
+</div>
+</div>
+
+<!-- GERÄTE -->
+<div x-show="step===4" class="bg-white p-8 rounded-2xl shadow">
+<h2 class="text-2xl font-bold mb-4">Geräte verbinden</h2>
+
+<div class="grid grid-cols-2 gap-8">
 <div>
-<h3 class="font-bold mb-2">Counter</h3>
+<h3 class="font-bold">Counter</h3>
 <div id="qrCounter"></div>
 </div>
 
 <div>
-<h3 class="font-bold mb-2">Zuschauer</h3>
+<h3 class="font-bold">Zuschauer</h3>
 <div id="qrViewer"></div>
 </div>
-
 </div>
 
+<div class="flex justify-between mt-6">
+<button @click="prev()" class="bg-gray-500 text-white px-6 py-2 rounded">Zurück</button>
+<button @click="startGame()" class="bg-green-600 text-white px-6 py-2 rounded">Spiel starten</button>
+</div>
 </div>
 
+<!-- SPIEL -->
+<div x-show="step===5">
 
-<!-- TIMER -->
-
-<div class="bg-slate-900 text-white p-6 rounded-2xl text-center">
-
-<div class="text-xs opacity-70">SPIELZEIT</div>
-
-<div class="text-6xl font-mono"
-:class="{'animate-pulse text-red-500': timeLeft<=60}"
-x-text="timerDisplay"></div>
-
-<div class="mt-3 text-2xl font-bold">
-
-<span x-text="team1"></span>
-<span class="mx-2" x-text="pointsA"></span>
-:
-<span class="mx-2" x-text="pointsB"></span>
-<span x-text="team2"></span>
-
-</div>
-
-</div>
-
-
-<!-- SPIELFELDER -->
+<div class="text-center text-4xl font-bold mb-6" x-text="timerDisplay"></div>
 
 <template x-for="f in fieldList">
+<div class="bg-white p-6 rounded-xl mb-4">
 
-<div class="bg-white p-6 rounded-2xl shadow">
-
-<h3 class="font-bold mb-2" x-text="f.name"></h3>
+<h3 class="font-bold mb-4" x-text="f.name"></h3>
 
 <div class="grid grid-cols-3 text-center items-center">
 
 <div>
-
-<div class="text-lg font-semibold mb-2" x-text="f.teamA"></div>
-
-<button
-x-show="canEdit()"
-@click="dec(f.keyA)"
-class="w-20 h-20 text-4xl bg-red-500 text-white rounded-xl">−</button>
-
-<button
-x-show="canEdit()"
-@click="inc(f.keyA)"
-class="w-20 h-20 text-4xl bg-green-600 text-white rounded-xl">+</button>
-
+<button x-show="canEdit()" @click="dec(f.keyA)" class="bg-red-500 text-white w-16 h-16 text-2xl rounded">-</button>
+<button x-show="canEdit()" @click="inc(f.keyA)" class="bg-green-600 text-white w-16 h-16 text-2xl rounded">+</button>
 </div>
 
-<div class="text-5xl font-bold">
-
+<div class="text-3xl font-bold">
 <span x-text="scores[f.keyA]"></span> :
 <span x-text="scores[f.keyB]"></span>
-
 </div>
 
 <div>
-
-<div class="text-lg font-semibold mb-2" x-text="f.teamB"></div>
-
-<button
-x-show="canEdit()"
-@click="dec(f.keyB)"
-class="w-20 h-20 text-4xl bg-red-500 text-white rounded-xl">−</button>
-
-<button
-x-show="canEdit()"
-@click="inc(f.keyB)"
-class="w-20 h-20 text-4xl bg-green-600 text-white rounded-xl">+</button>
-
+<button x-show="canEdit()" @click="dec(f.keyB)" class="bg-red-500 text-white w-16 h-16 text-2xl rounded">-</button>
+<button x-show="canEdit()" @click="inc(f.keyB)" class="bg-green-600 text-white w-16 h-16 text-2xl rounded">+</button>
 </div>
 
 </div>
-
 </div>
-
 </template>
 
+</div>
 
 </div>
 
 <script>
-
 function app(){
 
 return{
 
-role:"master",
-sessionId:"liveSpiel",
-
+step:0,
+mode:null,
 team1:"",
 team2:"",
+fields:2,
+minutes:10,
 
 scores:{m1a:0,m1b:0,m2a:0,m2b:0},
 
-pointsA:0,
-pointsB:0,
+role:"master",
+sessionId:"liveSpiel",
 
-timeLeft:0,
 timerDisplay:"00:00",
 
 init(){
 
 const params=new URLSearchParams(window.location.search)
-
 this.role=params.get("role")||"master"
 
-this.listenFirebase()
-
 this.createQR()
+
+this.listenFirebase()
 
 },
 
@@ -183,85 +185,63 @@ const base="https://fs170489-bye.github.io/spieltag/"
 
 new QRCode(document.getElementById("qrCounter"),{
 text:base+"?session="+this.sessionId+"&role=counter",
-width:200,
-height:200
+width:150,
+height:150
 })
 
 new QRCode(document.getElementById("qrViewer"),{
 text:base+"?session="+this.sessionId+"&role=viewer",
-width:200,
-height:200
+width:150,
+height:150
 })
 
 },
 
 canEdit(){
-
 return this.role==="master" || this.role==="counter"
-
 },
 
-syncFirebase(){
+next(){this.step++},
+prev(){this.step--},
 
-dbSet(
-dbRef(db,"spiele/"+this.sessionId),
-{
-scores:this.scores,
-timeLeft:this.timeLeft,
-pointsA:this.pointsA,
-pointsB:this.pointsB
-})
-
-},
-
-listenFirebase(){
-
-dbOnValue(
-dbRef(db,"spiele/"+this.sessionId),
-(snapshot)=>{
-
-const data=snapshot.val()
-
-if(!data)return
-
-this.scores=data.scores
-this.timeLeft=data.timeLeft
-this.pointsA=data.pointsA
-this.pointsB=data.pointsB
-
-})
-
+startGame(){
+this.step=5
 },
 
 inc(k){
-
 this.scores[k]++
-
 this.syncFirebase()
-
 },
 
 dec(k){
-
 if(this.scores[k]>0)this.scores[k]--
-
 this.syncFirebase()
+},
 
+syncFirebase(){
+dbSet(dbRef(db,"spiele/"+this.sessionId),{
+scores:this.scores
+})
+},
+
+listenFirebase(){
+dbOnValue(dbRef(db,"spiele/"+this.sessionId),(snap)=>{
+const d=snap.val()
+if(!d)return
+this.scores=d.scores
+})
 },
 
 get fieldList(){
-
 return[
-{name:"HF1",teamA:this.team1,teamB:this.team2,keyA:"m1a",keyB:"m1b"},
-{name:"HF2",teamA:this.team1,teamB:this.team2,keyA:"m2a",keyB:"m2b"}
+{name:"HF1",keyA:"m1a",keyB:"m1b"},
+{name:"HF2",keyA:"m2a",keyB:"m2b"}
 ]
-
 }
 
 }
 
 }
-
 </script>
 
 </body>
