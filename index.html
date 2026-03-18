@@ -9,11 +9,10 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-<!-- QR LIB -->
+<!-- QR -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js";
 
@@ -34,17 +33,15 @@ window.db=db
 window.dbRef=ref
 window.dbSet=set
 window.dbOnValue=onValue
-
 </script>
 
 </head>
-
 
 <body class="bg-slate-100 min-h-screen p-6 font-sans">
 
 <div x-data="app()" x-init="init()" class="max-w-6xl mx-auto space-y-8">
 
-<!-- TIMER (UNVERÄNDERT) -->
+<!-- TIMER -->
 <div class="bg-slate-900 text-white p-6 rounded-2xl text-center">
 <div class="text-xs opacity-70">SPIELZEIT</div>
 <div class="text-6xl font-mono"
@@ -69,8 +66,8 @@ x-text="timerDisplay"></div>
 <div x-show="step===0" class="bg-white p-8 rounded-2xl shadow text-center">
 <h2 class="text-3xl font-bold mb-6">Spielmodus wählen</h2>
 <div class="grid grid-cols-2 gap-6">
-<button @click="mode='single'; next()" class="p-12 bg-blue-600 text-white text-2xl rounded-xl">Single</button>
-<button @click="mode='twin'; next()" class="p-12 bg-indigo-600 text-white text-2xl rounded-xl">Twin</button>
+<button @click="mode='single'; next()" class="p-12 bg-blue-600 text-white text-2xl font-bold rounded-xl">Single</button>
+<button @click="mode='twin'; next()" class="p-12 bg-indigo-600 text-white text-2xl font-bold rounded-xl">Twin</button>
 </div>
 </div>
 
@@ -99,40 +96,89 @@ x-text="timerDisplay"></div>
 
 <!-- FELDER -->
 <div x-show="step===3" class="bg-white p-8 rounded-2xl shadow">
-
 <h2 class="text-2xl font-bold mb-4">Spielfeld wählen</h2>
 
 <div class="flex gap-4">
-<button x-show="mode==='single'" @click="selectFields(1)" :class="fieldBtn(1)">HF</button>
-<button x-show="mode==='single'" @click="selectFields(2)" :class="fieldBtn(2)">HF + NF</button>
+<button x-show="mode==='single'" @click="fields=1" :class="fieldBtn(1)">HF</button>
+<button x-show="mode==='single'" @click="fields=2" :class="fieldBtn(2)">HF + NF</button>
 
-<button x-show="mode==='twin'" @click="selectFields(2)" :class="fieldBtn(2)">HF1 + HF2</button>
-<button x-show="mode==='twin'" @click="selectFields(3)" :class="fieldBtn(3)">HF1 + HF2 + NF1</button>
-<button x-show="mode==='twin'" @click="selectFields(4)" :class="fieldBtn(4)">HF1 + HF2 + NF1 + NF2</button>
-</div>
-
-<!-- QR (SAFE) -->
-<div x-show="fields>0" x-init="$nextTick(()=>createQR())" class="mt-8 text-center">
-<h3 class="font-bold mb-4">Geräte verbinden</h3>
-<div class="grid grid-cols-2 gap-6">
-<div><div id="qrCounter"></div><p>Counter</p></div>
-<div><div id="qrViewer"></div><p>Zuschauer</p></div>
-</div>
+<button x-show="mode==='twin'" @click="fields=2" :class="fieldBtn(2)">HF1 + HF2</button>
+<button x-show="mode==='twin'" @click="fields=3" :class="fieldBtn(3)">HF1 + HF2 + NF1</button>
+<button x-show="mode==='twin'" @click="fields=4" :class="fieldBtn(4)">HF1 + HF2 + NF1 + NF2</button>
 </div>
 
 <div class="flex justify-between mt-6">
 <button @click="prev()" class="px-6 py-2 bg-gray-500 text-white rounded">Zurück</button>
 <button @click="startGame()" :disabled="fields===0" class="px-6 py-2 bg-green-600 text-white rounded">Spiel starten</button>
 </div>
+</div>
+
+<!-- SPIEL -->
+<div x-show="step===4" class="space-y-6">
+
+<h2 class="text-3xl font-bold">Begegnung <span x-text="round"></span> / 3</h2>
+
+<!-- 🔥 QR BUTTONS -->
+<div class="flex gap-4 justify-center">
+<button @click="toggleCounter()" class="px-4 py-2 bg-blue-600 text-white rounded">
+Counter QR
+</button>
+<button @click="toggleViewer()" class="px-4 py-2 bg-indigo-600 text-white rounded">
+Zuschauer QR
+</button>
+</div>
+
+<!-- QR anzeigen -->
+<div x-show="showCounter" class="text-center">
+<div id="qrCounter"></div>
+</div>
+
+<div x-show="showViewer" class="text-center">
+<div id="qrViewer"></div>
+</div>
+
+<!-- SPIELFELDER -->
+<template x-for="f in fieldList">
+<div class="bg-white p-6 rounded-2xl shadow">
+<h3 class="font-bold mb-2" x-text="f.name"></h3>
+
+<div class="grid grid-cols-3 text-center items-center">
+
+<div>
+<div class="text-lg font-semibold mb-2" x-text="f.teamA"></div>
+<button @click="dec(f.keyA)" :disabled="timeLeft===0" class="w-20 h-20 text-4xl bg-red-500 text-white rounded-xl">−</button>
+<button @click="inc(f.keyA)" :disabled="timeLeft===0" class="w-20 h-20 text-4xl bg-green-600 text-white rounded-xl">+</button>
+</div>
+
+<div class="text-5xl font-bold">
+<span x-text="scores[f.keyA]"></span> :
+<span x-text="scores[f.keyB]"></span>
+</div>
+
+<div>
+<div class="text-lg font-semibold mb-2" x-text="f.teamB"></div>
+<button @click="dec(f.keyB)" :disabled="timeLeft===0" class="w-20 h-20 text-4xl bg-red-500 text-white rounded-xl">−</button>
+<button @click="inc(f.keyB)" :disabled="timeLeft===0" class="w-20 h-20 text-4xl bg-green-600 text-white rounded-xl">+</button>
+</div>
+
+</div>
+</div>
+</template>
+
+<div class="flex justify-between mt-6">
+<button @click="prevRound()" class="px-6 py-3 bg-gray-500 text-white rounded">← Zurück</button>
+<button @click="nextRound()" class="px-6 py-3 bg-indigo-600 text-white rounded"
+x-text="round===3 ? 'Endergebnis' : 'Weiter →'"></button>
+</div>
+
+</div>
 
 </div>
 
 <script>
-
 function app(){
 return{
 
-sessionId:"liveSpiel",
 mode:null,
 step:0,
 team1:"",
@@ -142,35 +188,36 @@ round:1,
 minutes:10,
 
 scores:{m1a:0,m1b:0,m2a:0,m2b:0,m3a:0,m3b:0,m4a:0,m4b:0},
-pointsA:0,
-pointsB:0,
 
 timeLeft:0,
 timer:null,
 timerDisplay:"00:00",
 
-init(){
-this.listenFirebase()
+showCounter:false,
+showViewer:false,
+
+init(){},
+
+toggleCounter(){
+this.showCounter=!this.showCounter
+this.$nextTick(()=>this.createQR())
 },
 
-selectFields(n){
-this.fields=n
+toggleViewer(){
+this.showViewer=!this.showViewer
+this.$nextTick(()=>this.createQR())
 },
 
 createQR(){
+const base=location.origin+location.pathname
 
-const base = window.location.origin + window.location.pathname
+if(this.showCounter){
+new QRCode(document.getElementById("qrCounter"),{text:base+"?role=counter"})
+}
 
-const c=document.getElementById("qrCounter")
-const v=document.getElementById("qrViewer")
-
-if(!c || !v) return
-
-c.innerHTML=""
-v.innerHTML=""
-
-new QRCode(c,{text: base+"?role=counter"})
-new QRCode(v,{text: base+"?role=viewer"})
+if(this.showViewer){
+new QRCode(document.getElementById("qrViewer"),{text:base+"?role=viewer"})
+}
 },
 
 next(){this.step++},
@@ -190,7 +237,6 @@ this.timerDisplay=m.toString().padStart(2,"0")+":"+s.toString().padStart(2,"0")
 
 }
 }
-
 </script>
 
 </body>
