@@ -44,190 +44,104 @@ window.dbOnValue=onValue
 
 <div x-data="app()" x-init="init()" class="max-w-6xl mx-auto space-y-8">
 
-
-<!-- TIMER -->
-
+<!-- TIMER (UNVERÄNDERT) -->
 <div class="bg-slate-900 text-white p-6 rounded-2xl text-center">
-
 <div class="text-xs opacity-70">SPIELZEIT</div>
-
 <div class="text-6xl font-mono"
 :class="{'animate-pulse text-red-500': timeLeft<=60}"
 x-text="timerDisplay"></div>
 
 <div class="mt-3 text-2xl font-bold">
-
 <span x-text="team1"></span>
-
-<span class="mx-2" x-text="pointsA"></span>
-
-:
-
+<span class="mx-2" x-text="pointsA"></span> :
 <span class="mx-2" x-text="pointsB"></span>
-
 <span x-text="team2"></span>
-
 </div>
 
 <div class="flex gap-3 justify-center mt-4">
-
-<button @click="testTimer()" class="px-4 py-2 bg-purple-500 rounded text-white">
-Test 10s
-</button>
-
-<button @click="startPauseTimer()" class="px-6 py-2 bg-green-500 rounded text-white">
-Start / Pause
-</button>
-
-<button @click="resetTimer()" class="px-6 py-2 bg-yellow-500 rounded text-white">
-Reset
-</button>
-
+<button @click="testTimer()" class="px-4 py-2 bg-purple-500 rounded text-white">Test 10s</button>
+<button @click="startPauseTimer()" class="px-6 py-2 bg-green-500 rounded text-white">Start / Pause</button>
+<button @click="resetTimer()" class="px-6 py-2 bg-yellow-500 rounded text-white">Reset</button>
 </div>
-
 </div>
-
 
 <!-- MODUS -->
-
 <div x-show="step===0" class="bg-white p-8 rounded-2xl shadow text-center">
-
 <h2 class="text-3xl font-bold mb-6">Spielmodus wählen</h2>
-
 <div class="grid grid-cols-2 gap-6">
-
-<button @click="mode='single'; next()" class="p-12 bg-blue-600 text-white text-2xl font-bold rounded-xl">
-Single
-</button>
-
-<button @click="mode='twin'; next()" class="p-12 bg-indigo-600 text-white text-2xl font-bold rounded-xl">
-Twin
-</button>
-
+<button @click="mode='single'; next()" class="p-12 bg-blue-600 text-white text-2xl rounded-xl">Single</button>
+<button @click="mode='twin'; next()" class="p-12 bg-indigo-600 text-white text-2xl rounded-xl">Twin</button>
+</div>
 </div>
 
-</div>
-
-
-<!-- TEAM INPUT -->
-
+<!-- TEAM -->
 <div x-show="step===1" class="bg-white p-8 rounded-2xl shadow">
-
 <h2 class="text-2xl font-bold mb-4">Teams eingeben</h2>
-
 <div class="grid grid-cols-2 gap-4">
-
 <input x-model="team1" placeholder="Team A" class="border p-3 rounded">
 <input x-model="team2" placeholder="Team B" class="border p-3 rounded">
-
 </div>
-
 <div class="flex justify-between mt-6">
-
 <button @click="prev()" class="px-6 py-2 bg-gray-500 text-white rounded">Zurück</button>
-
-<button @click="next()" :disabled="!team1 || !team2"
-class="px-6 py-2 bg-indigo-600 text-white rounded">Weiter</button>
-
+<button @click="next()" :disabled="!team1 || !team2" class="px-6 py-2 bg-indigo-600 text-white rounded">Weiter</button>
 </div>
-
 </div>
-
 
 <!-- ZEIT -->
-
 <div x-show="step===2" class="bg-white p-8 rounded-2xl shadow">
-
 <h2 class="text-2xl font-bold mb-4">Zeit einstellen</h2>
-
-<input type="number" x-model.number="minutes"
-class="border p-3 rounded w-40 text-xl">
-
+<input type="number" x-model.number="minutes" class="border p-3 rounded w-40 text-xl">
 <div class="flex justify-between mt-6">
-
 <button @click="prev()" class="px-6 py-2 bg-gray-500 text-white rounded">Zurück</button>
-
 <button @click="next()" class="px-6 py-2 bg-indigo-600 text-white rounded">Weiter</button>
-
 </div>
-
 </div>
-
 
 <!-- FELDER -->
-
 <div x-show="step===3" class="bg-white p-8 rounded-2xl shadow">
 
 <h2 class="text-2xl font-bold mb-4">Spielfeld wählen</h2>
 
 <div class="flex gap-4">
+<button x-show="mode==='single'" @click="selectFields(1)" :class="fieldBtn(1)">HF</button>
+<button x-show="mode==='single'" @click="selectFields(2)" :class="fieldBtn(2)">HF + NF</button>
 
-<button x-show="mode==='single'" @click="fields=1" :class="fieldBtn(1)">HF</button>
-<button x-show="mode==='single'" @click="fields=2" :class="fieldBtn(2)">HF + NF</button>
+<button x-show="mode==='twin'" @click="selectFields(2)" :class="fieldBtn(2)">HF1 + HF2</button>
+<button x-show="mode==='twin'" @click="selectFields(3)" :class="fieldBtn(3)">HF1 + HF2 + NF1</button>
+<button x-show="mode==='twin'" @click="selectFields(4)" :class="fieldBtn(4)">HF1 + HF2 + NF1 + NF2</button>
+</div>
 
-<button x-show="mode==='twin'" @click="fields=2" :class="fieldBtn(2)">HF1 + HF2</button>
-<button x-show="mode==='twin'" @click="fields=3" :class="fieldBtn(3)">HF1 + HF2 + NF1</button>
-<button x-show="mode==='twin'" @click="fields=4" :class="fieldBtn(4)">HF1 + HF2 + NF1 + NF2</button>
-
+<!-- QR (SAFE) -->
+<div x-show="fields>0" x-init="$nextTick(()=>createQR())" class="mt-8 text-center">
+<h3 class="font-bold mb-4">Geräte verbinden</h3>
+<div class="grid grid-cols-2 gap-6">
+<div><div id="qrCounter"></div><p>Counter</p></div>
+<div><div id="qrViewer"></div><p>Zuschauer</p></div>
+</div>
 </div>
 
 <div class="flex justify-between mt-6">
-
 <button @click="prev()" class="px-6 py-2 bg-gray-500 text-white rounded">Zurück</button>
-
-<button @click="startGame()" :disabled="fields===0"
-class="px-6 py-2 bg-green-600 text-white rounded">Spiel starten</button>
-
-</div>
-
-<!-- 🔥 NEU: QR OHNE EINGRIFF -->
-<div x-show="fields>0" class="mt-8 text-center">
-
-<h3 class="font-bold mb-4">Geräte verbinden</h3>
-
-<div class="grid grid-cols-2 gap-6">
-
-<div>
-<div id="qrCounter"></div>
-<p class="text-sm mt-2">Counter</p>
-</div>
-
-<div>
-<div id="qrViewer"></div>
-<p class="text-sm mt-2">Zuschauer</p>
+<button @click="startGame()" :disabled="fields===0" class="px-6 py-2 bg-green-600 text-white rounded">Spiel starten</button>
 </div>
 
 </div>
-
-</div>
-
-</div>
-
-
-<!-- REST (SPIEL + ENDE) BLEIBT UNVERÄNDERT -->
-<!-- DEIN ORIGINAL CODE IST HIER 1:1 WEITER -->
 
 <script>
 
 function app(){
-
 return{
 
 sessionId:"liveSpiel",
-
 mode:null,
 step:0,
-
 team1:"",
 team2:"",
-
 fields:0,
-
 round:1,
 minutes:10,
 
 scores:{m1a:0,m1b:0,m2a:0,m2b:0,m3a:0,m3b:0,m4a:0,m4b:0},
-
 pointsA:0,
 pointsB:0,
 
@@ -237,30 +151,28 @@ timerDisplay:"00:00",
 
 init(){
 this.listenFirebase()
+},
 
-this.$nextTick(()=>{
-this.createQR()
-})
+selectFields(n){
+this.fields=n
 },
 
 createQR(){
 
 const base = window.location.origin + window.location.pathname
 
-const c = document.getElementById("qrCounter")
-const v = document.getElementById("qrViewer")
+const c=document.getElementById("qrCounter")
+const v=document.getElementById("qrViewer")
 
 if(!c || !v) return
 
 c.innerHTML=""
 v.innerHTML=""
 
-new QRCode(c,{text: base + "?role=counter"})
-new QRCode(v,{text: base + "?role=viewer"})
-
+new QRCode(c,{text: base+"?role=counter"})
+new QRCode(v,{text: base+"?role=viewer"})
 },
 
-// REST UNVERÄNDERT
 next(){this.step++},
 prev(){if(this.step>0)this.step--},
 
@@ -277,7 +189,6 @@ this.timerDisplay=m.toString().padStart(2,"0")+":"+s.toString().padStart(2,"0")
 }
 
 }
-
 }
 
 </script>
