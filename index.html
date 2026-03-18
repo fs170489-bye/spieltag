@@ -282,29 +282,42 @@ this.listenFirebase()
 
 // NEU
 goDevices(){
-this.step=6
-this.$nextTick(()=>this.createQR())
-},
+    this.step = 6
+
+    setTimeout(() => {
+        this.createQR()
+    }, 100)
+}
 
 // NEU
 createQR(){
-const base = window.location.origin + window.location.pathname
 
-document.getElementById("qrCounter").innerHTML=""
-document.getElementById("qrViewer").innerHTML=""
+    const base = window.location.origin + window.location.pathname
 
-new QRCode(document.getElementById("qrCounter"),{
-text: base + "?role=counter"
-})
+    const counterEl = document.getElementById("qrCounter")
+    const viewerEl = document.getElementById("qrViewer")
 
-new QRCode(document.getElementById("qrViewer"),{
-text: base + "?role=viewer"
-})
-},
+    if(!counterEl || !viewerEl) return
 
-// REST = UNVERÄNDERT (DEIN CODE)
+    counterEl.innerHTML = ""
+    viewerEl.innerHTML = ""
 
-}
+    setTimeout(() => {
+
+        new QRCode(counterEl,{
+            text: base + "?role=counter",
+            width:180,
+            height:180
+        })
+
+        new QRCode(viewerEl,{
+            text: base + "?role=viewer",
+            width:180,
+            height:180
+        })
+
+    }, 50)
+
 }
 
 </script>
