@@ -317,6 +317,11 @@ this.updateDisplay()
 this.syncFirebase()
 this.step=4
 },
+ setTimeout(()=>{   // 🔥 NEU (wichtig!)
+this.step=4
+},200)
+
+},
 
 inc(k){
 if(this.timeLeft===0)return
@@ -331,6 +336,7 @@ this.syncFirebase()
 },
 
 syncFirebase(){
+ if(this.role!=="master") return
 dbSet(dbRef(db,"spiele/"+this.sessionId),{
 mode:this.mode,
 round:this.round,
@@ -338,6 +344,9 @@ scores:this.scores,
 timeLeft:this.timeLeft,
 pointsA:this.pointsA,
 pointsB:this.pointsB
+ // 🔥 FEHLTE:
+team1:this.team1,
+team2:this.team2
 })
 },
 
@@ -352,6 +361,8 @@ this.scores=data.scores ?? this.scores
 this.timeLeft=data.timeLeft ?? this.timeLeft
 this.pointsA=data.pointsA ?? this.pointsA
 this.pointsB=data.pointsB ?? this.pointsB
+ this.team1=data.team1 ?? this.team1
+this.team2=data.team2 ?? this.team2
 
 this.updateDisplay()
 })
