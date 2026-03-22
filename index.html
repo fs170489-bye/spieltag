@@ -8,12 +8,9 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
-<!-- QR CODE -->
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js";
 
@@ -27,18 +24,16 @@ const firebaseConfig = {
  appId: "1:727289331208:web:de5e36f52c6d82b56ddbbd"
 };
 
-const firebaseApp = initializeApp(firebaseConfig);
-const db = getDatabase(firebaseApp);
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
 window.db=db
 window.dbRef=ref
 window.dbSet=set
 window.dbOnValue=onValue
-
 </script>
 
 </head>
-
 
 <body class="bg-slate-100 min-h-screen p-6 font-sans">
 
@@ -47,6 +42,7 @@ window.dbOnValue=onValue
 <!-- TIMER -->
 <div class="bg-slate-900 text-white p-6 rounded-2xl text-center">
 <div class="text-xs opacity-70">SPIELZEIT</div>
+
 <div class="text-6xl font-mono"
 :class="{'animate-pulse text-red-500': timeLeft<=60}"
 x-text="timerDisplay"></div>
@@ -65,7 +61,6 @@ x-text="timerDisplay"></div>
 </div>
 </div>
 
-
 <!-- MODUS -->
 <div x-show="step===0" class="bg-white p-8 rounded-2xl shadow text-center">
 <h2 class="text-3xl font-bold mb-6">Spielmodus wählen</h2>
@@ -75,7 +70,6 @@ x-text="timerDisplay"></div>
 <button @click="mode='twin'; next()" class="p-12 bg-indigo-600 text-white text-2xl font-bold rounded-xl">Twin</button>
 </div>
 </div>
-
 
 <!-- TEAM INPUT -->
 <div x-show="step===1" class="bg-white p-8 rounded-2xl shadow">
@@ -92,7 +86,6 @@ x-text="timerDisplay"></div>
 </div>
 </div>
 
-
 <!-- ZEIT -->
 <div x-show="step===2" class="bg-white p-8 rounded-2xl shadow">
 <h2 class="text-2xl font-bold mb-4">Zeit einstellen</h2>
@@ -106,7 +99,6 @@ class="border p-3 rounded w-40 text-xl">
 </div>
 </div>
 
-
 <!-- SPIEL -->
 <div x-show="step===3" class="space-y-6">
 
@@ -114,7 +106,7 @@ class="border p-3 rounded w-40 text-xl">
 Begegnung <span x-text="round"></span> / 3
 </h2>
 
-<!-- ✅ QR BUTTONS -->
+<!-- QR -->
 <div class="flex gap-4 justify-center">
 <button @click="toggleQR('counter')" class="px-4 py-2 bg-blue-600 text-white rounded">Counter QR</button>
 <button @click="toggleQR('viewer')" class="px-4 py-2 bg-green-600 text-white rounded">Zuschauer QR</button>
@@ -125,9 +117,7 @@ Begegnung <span x-text="round"></span> / 3
 <div class="text-xs mt-2" x-text="qrText"></div>
 </div>
 
-
-<template x-for="f in fieldList">
-
+<template x-for="f in fieldList" :key="f.name">
 <div class="bg-white p-6 rounded-2xl shadow">
 
 <h3 class="font-bold mb-2" x-text="f.name"></h3>
@@ -136,10 +126,8 @@ Begegnung <span x-text="round"></span> / 3
 
 <div>
 <div class="text-lg font-semibold mb-2" x-text="f.teamA"></div>
-<button @click="dec(f.keyA)" :disabled="timeLeft===0 || role==='viewer'"
-class="w-20 h-20 text-4xl bg-red-500 text-white rounded-xl">−</button>
-<button @click="inc(f.keyA)" :disabled="timeLeft===0 || role==='viewer'"
-class="w-20 h-20 text-4xl bg-green-600 text-white rounded-xl">+</button>
+<button @click="dec(f.keyA)" :disabled="timeLeft===0 || role==='viewer'" class="w-20 h-20 text-4xl bg-red-500 text-white rounded-xl">−</button>
+<button @click="inc(f.keyA)" :disabled="timeLeft===0 || role==='viewer'" class="w-20 h-20 text-4xl bg-green-600 text-white rounded-xl">+</button>
 </div>
 
 <div class="text-5xl font-bold">
@@ -149,30 +137,24 @@ class="w-20 h-20 text-4xl bg-green-600 text-white rounded-xl">+</button>
 
 <div>
 <div class="text-lg font-semibold mb-2" x-text="f.teamB"></div>
-<button @click="dec(f.keyB)" :disabled="timeLeft===0 || role==='viewer'"
-class="w-20 h-20 text-4xl bg-red-500 text-white rounded-xl">−</button>
-<button @click="inc(f.keyB)" :disabled="timeLeft===0 || role==='viewer'"
-class="w-20 h-20 text-4xl bg-green-600 text-white rounded-xl">+</button>
+<button @click="dec(f.keyB)" :disabled="timeLeft===0 || role==='viewer'" class="w-20 h-20 text-4xl bg-red-500 text-white rounded-xl">−</button>
+<button @click="inc(f.keyB)" :disabled="timeLeft===0 || role==='viewer'" class="w-20 h-20 text-4xl bg-green-600 text-white rounded-xl">+</button>
 </div>
 
 </div>
 </div>
-
 </template>
 
 </div>
 
 </div>
 
-
 <script>
 function app(){
-
 return{
 
 sessionId:"liveSpiel",
 
-// ✅ NEU
 role:"master",
 showQR:false,
 qrText:"",
@@ -196,27 +178,17 @@ timer:null,
 timerDisplay:"00:00",
 
 init(){
-
-// ✅ URL PARAMS (QR JOIN)
 const params=new URLSearchParams(window.location.search)
-
 if(params.get("role")){
 this.role=params.get("role")
 this.sessionId=params.get("session") || this.sessionId
 this.step=3
 }
-
 this.listenFirebase()
 },
 
-// ✅ QR
 toggleQR(type){
-
-if(this.showQR){
-this.showQR=false
-return
-}
-
+if(this.showQR){this.showQR=false;return}
 this.showQR=true
 
 let url=window.location.origin+window.location.pathname+
@@ -227,7 +199,6 @@ this.qrText=url
 setTimeout(()=>{
 QRCode.toCanvas(document.getElementById("qrcode"), url)
 },100)
-
 },
 
 next(){this.step++},
@@ -236,6 +207,7 @@ prev(){if(this.step>0)this.step--},
 startGame(){
 this.timeLeft=this.minutes*60
 this.updateDisplay()
+this.syncFirebase()
 this.step=3
 },
 
@@ -253,7 +225,10 @@ this.syncFirebase()
 
 syncFirebase(){
 dbSet(dbRef(db,"spiele/"+this.sessionId),{
+mode:this.mode,
+round:this.round,
 scores:this.scores,
+timeLeft:this.timeLeft,
 pointsA:this.pointsA,
 pointsB:this.pointsB
 })
@@ -263,15 +238,16 @@ listenFirebase(){
 dbOnValue(dbRef(db,"spiele/"+this.sessionId),(snapshot)=>{
 const data=snapshot.val()
 if(!data)return
-this.scores=data.scores || this.scores
-this.pointsA=data.pointsA || 0
-this.pointsB=data.pointsB || 0
-})
-},
 
-testTimer(){
-this.timeLeft=10
+this.mode=data.mode ?? this.mode
+this.round=data.round ?? this.round
+this.scores=data.scores ?? this.scores
+this.timeLeft=data.timeLeft ?? this.timeLeft
+this.pointsA=data.pointsA ?? this.pointsA
+this.pointsB=data.pointsB ?? this.pointsB
+
 this.updateDisplay()
+})
 },
 
 startPauseTimer(){
@@ -284,6 +260,7 @@ this.timer=setInterval(()=>{
 if(this.timeLeft>0){
 this.timeLeft--
 this.updateDisplay()
+this.syncFirebase()
 }else{
 clearInterval(this.timer)
 this.timer=null
@@ -294,6 +271,12 @@ this.timer=null
 resetTimer(){
 this.timeLeft=this.minutes*60
 this.updateDisplay()
+this.syncFirebase()
+},
+
+testTimer(){
+this.timeLeft=10
+this.updateDisplay()
 },
 
 updateDisplay(){
@@ -303,18 +286,15 @@ this.timerDisplay=m.toString().padStart(2,"0")+":"+s.toString().padStart(2,"0")
 },
 
 get fieldList(){
-
 if(this.mode==="twin"){
 return [
 {name:"HF1",teamA:this.team1+" 1",teamB:this.team2+" 1",keyA:"m1a",keyB:"m1b"},
 {name:"HF2",teamA:this.team1+" 2",teamB:this.team2+" 2",keyA:"m2a",keyB:"m2b"}
 ]
 }
-
 return [
 {name:"HF1",teamA:this.team1,teamB:this.team2,keyA:"m1a",keyB:"m1b"}
 ]
-
 }
 
 }
