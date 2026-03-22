@@ -279,11 +279,14 @@ init(){
 
 const params=new URLSearchParams(window.location.search)
 
-// 🔥 NUR Rolle setzen – NICHT step ändern
+// Rolle setzen, aber KEIN step ändern
 if(params.get("role")){
   this.role=params.get("role")
   this.sessionId=params.get("session") || this.sessionId
 }
+
+// 🔥 WICHTIG: step immer sauber starten
+this.step = 0
 
 this.listenFirebase()
 },
@@ -352,7 +355,9 @@ listenFirebase(){
 dbOnValue(dbRef(db,"spiele/"+this.sessionId),(snapshot)=>{
 const data=snapshot.val()
 if(!data)return
-
+// 🔥 nur übernehmen wenn Daten vollständig sind
+if(!data.mode || !data.team1 || !data.team2) return
+ 
 this.mode=data.mode ?? this.mode
 this.round=data.round ?? this.round
 this.scores=data.scores ?? this.scores
