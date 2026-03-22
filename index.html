@@ -314,13 +314,10 @@ prev(){if(this.step>0)this.step--},
 startGame(){
 this.timeLeft=this.minutes*60
 this.updateDisplay()
-this.syncFirebase()
-this.step=4
-},
- setTimeout(()=>{   // 🔥 NEU (wichtig!)
-this.step=4
-},200)
 
+this.step=4
+
+this.syncFirebase()
 },
 
 inc(k){
@@ -343,7 +340,7 @@ round:this.round,
 scores:this.scores,
 timeLeft:this.timeLeft,
 pointsA:this.pointsA,
-pointsB:this.pointsB
+pointsB:this.pointsB,
  // 🔥 FEHLTE:
 team1:this.team1,
 team2:this.team2
