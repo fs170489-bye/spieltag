@@ -279,10 +279,10 @@ init(){
 
 const params=new URLSearchParams(window.location.search)
 
+// 🔥 NUR Rolle setzen – NICHT step ändern
 if(params.get("role")){
-this.role=params.get("role")
-this.sessionId=params.get("session") || this.sessionId
-this.step=0
+  this.role=params.get("role")
+  this.sessionId=params.get("session") || this.sessionId
 }
 
 this.listenFirebase()
