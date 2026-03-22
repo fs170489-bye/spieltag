@@ -282,7 +282,7 @@ const params=new URLSearchParams(window.location.search)
 if(params.get("role")){
 this.role=params.get("role")
 this.sessionId=params.get("session") || this.sessionId
-this.step=4
+this.step=0
 }
 
 this.listenFirebase()
@@ -334,6 +334,7 @@ this.syncFirebase()
 
 syncFirebase(){
  if(this.role!=="master") return
+ if(!this.mode || !this.team1 || !this.team2) return
 dbSet(dbRef(db,"spiele/"+this.sessionId),{
 mode:this.mode,
 round:this.round,
@@ -399,13 +400,21 @@ let m=Math.floor(this.timeLeft/60)
 let s=this.timeLeft%60
 this.timerDisplay=m.toString().padStart(2,"0")+":"+s.toString().padStart(2,"0")
 },
-
 get fieldList(){
+
+// 🔥 WICHTIG: erst anzeigen wenn Daten da sind
+if(!this.mode || !this.team1 || !this.team2) return []
 
 let arr=[]
 
 if(this.mode==="single"){
-arr.push({name:"HF1",teamA:this.team1,teamB:this.team2,keyA:"m1a",keyB:"m1b"})
+arr.push({
+name:"HF1",
+teamA:this.team1,
+teamB:this.team2,
+keyA:"m1a",
+keyB:"m1b"
+})
 }
 
 if(this.mode==="twin"){
@@ -420,16 +429,24 @@ hf1B=2
 hf2B=1
 }
 
-arr.push({name:"HF1",teamA:this.team1+" "+hf1A,teamB:this.team2+" "+hf1B,keyA:"m1a",keyB:"m1b"})
-arr.push({name:"HF2",teamA:this.team1+" "+hf2A,teamB:this.team2+" "+hf2B,keyA:"m2a",keyB:"m2b"})
+arr.push({
+name:"HF1",
+teamA:this.team1+" "+hf1A,
+teamB:this.team2+" "+hf1B,
+keyA:"m1a",
+keyB:"m1b"
+})
+
+arr.push({
+name:"HF2",
+teamA:this.team1+" "+hf2A,
+teamB:this.team2+" "+hf2B,
+keyA:"m2a",
+keyB:"m2b"
+})
 }
 
 return arr
-
-}
-
-}
-
 }
 
 </script>
