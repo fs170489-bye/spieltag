@@ -9,6 +9,9 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
+<!-- ✅ QR LIB -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
@@ -100,15 +103,25 @@ x-text="timerDisplay"></div>
 Begegnung <span x-text="round"></span> / 3
 </h2>
 
+<!-- ✅ COUNTER BUTTON -->
+<div class="text-center">
+<button @click="toggleCounter()" class="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold">
+Counter verbinden
+</button>
+</div>
+
+<!-- ✅ QR -->
+<div x-show="showCounter" class="flex justify-center">
+<div id="qrCounter"></div>
+</div>
+
 <div x-show="mode==='twin' && round===3"
 class="bg-yellow-200 text-yellow-900 p-4 rounded-xl font-semibold text-center">
 ⚠️ 2-4 Spieler tauschen
 </div>
 
 <template x-for="f in fieldList">
-
 <div class="bg-white p-6 rounded-2xl shadow">
-
 <h3 class="font-bold mb-2" x-text="f.name"></h3>
 
 <div class="grid grid-cols-3 text-center items-center">
@@ -132,33 +145,7 @@ class="bg-yellow-200 text-yellow-900 p-4 rounded-xl font-semibold text-center">
 
 </div>
 </div>
-
 </template>
-
-<div class="flex justify-between mt-6">
-<button @click="prevRound()" class="px-6 py-3 bg-gray-500 text-white rounded">← Zurück</button>
-<button @click="nextRound()" class="px-6 py-3 bg-indigo-600 text-white rounded"
-x-text="round===3 ? 'Endergebnis' : 'Weiter →'"></button>
-</div>
-
-</div>
-
-<!-- ENDE -->
-<div x-show="step===4" class="bg-white p-8 rounded-2xl shadow text-center">
-
-<h2 class="text-3xl font-bold mb-6">Endergebnis</h2>
-
-<div class="text-4xl font-bold">
-<span x-text="team1"></span>
-<span class="mx-4" x-text="pointsA"></span> :
-<span class="mx-4" x-text="pointsB"></span>
-<span x-text="team2"></span>
-</div>
-
-<div class="flex justify-center gap-6 mt-8">
-<button @click="resetAll()" class="px-8 py-3 bg-indigo-600 text-white rounded-xl">Neuer Spieltag</button>
-<button @click="step=0" class="px-8 py-3 bg-gray-500 text-white rounded-xl">Zurück</button>
-</div>
 
 </div>
 
@@ -170,23 +157,38 @@ return{
 
 mode:null,
 step:0,
-
 team1:"",
 team2:"",
-
 round:1,
 minutes:10,
 
 scores:{m1a:0,m1b:0,m2a:0,m2b:0},
 
-pointsA:0,
-pointsB:0,
-
 timeLeft:0,
 timer:null,
 timerDisplay:"00:00",
 
+// ✅ NEU
+showCounter:false,
+
 init(){},
+
+toggleCounter(){
+this.showCounter=!this.showCounter
+
+this.$nextTick(()=>{
+if(this.showCounter){
+const el=document.getElementById("qrCounter")
+el.innerHTML=""
+
+new QRCode(el,{
+text:location.href+"?role=counter",
+width:200,
+height:200
+})
+}
+})
+},
 
 next(){this.step++},
 prev(){if(this.step>0)this.step--},
@@ -195,96 +197,6 @@ startGame(){
 this.timeLeft=this.minutes*60
 this.updateDisplay()
 this.step=3
-},
-
-nextRound(){
-this.calculateTendenz()
-if(this.round<3){
-this.round++
-this.resetScores()
-}else{
-this.step=4
-}
-},
-
-prevRound(){
-if(this.round>1){
-this.round--
-this.resetScores()
-}else{
-this.step=2
-}
-},
-
-calculateTendenz(){
-let a1=this.scores.m1a
-let b1=this.scores.m1b
-
-if(a1>b1)this.pointsA++
-else if(b1>a1)this.pointsB++
-else{this.pointsA++;this.pointsB++;}
-
-if(this.mode==="twin"){
-let a2=this.scores.m2a
-let b2=this.scores.m2b
-if(a2>b2)this.pointsA++
-else if(b2>a2)this.pointsB++
-else{this.pointsA++;this.pointsB++;}
-}
-},
-
-resetScores(){
-this.scores={m1a:0,m1b:0,m2a:0,m2b:0}
-},
-
-resetAll(){
-this.mode=null
-this.step=0
-this.team1=""
-this.team2=""
-this.round=1
-this.pointsA=0
-this.pointsB=0
-this.resetScores()
-this.resetTimer()
-},
-
-inc(k){
-if(!this.timer) return
-this.scores[k]++
-},
-
-dec(k){
-if(!this.timer) return
-if(this.scores[k]>0)this.scores[k]--
-},
-
-testTimer(){
-this.timeLeft=10
-this.updateDisplay()
-},
-
-startPauseTimer(){
-if(this.timer){
-clearInterval(this.timer)
-this.timer=null
-return
-}
-
-this.timer=setInterval(()=>{
-if(this.timeLeft>0){
-this.timeLeft--
-this.updateDisplay()
-}else{
-clearInterval(this.timer)
-this.timer=null
-}
-},1000)
-},
-
-resetTimer(){
-this.timeLeft=this.minutes*60
-this.updateDisplay()
 },
 
 updateDisplay(){
