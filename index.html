@@ -36,7 +36,6 @@ window.dbOnValue=onValue
 
 </head>
 
-
 <body class="bg-slate-100 min-h-screen p-6 font-sans">
 
 <div x-data="app()" x-init="init()" class="max-w-6xl mx-auto space-y-8">
@@ -116,8 +115,8 @@ class="bg-yellow-200 text-yellow-900 p-4 rounded-xl font-semibold text-center">
 
 <div>
 <div class="text-lg font-semibold mb-2" x-text="f.teamA"></div>
-<button @click="dec(f.keyA)" :disabled="timeLeft===0" class="w-20 h-20 text-4xl bg-red-500 text-white rounded-xl">−</button>
-<button @click="inc(f.keyA)" :disabled="timeLeft===0" class="w-20 h-20 text-4xl bg-green-600 text-white rounded-xl">+</button>
+<button @click="dec(f.keyA)" :disabled="!timer" class="w-20 h-20 text-4xl bg-red-500 text-white rounded-xl">−</button>
+<button @click="inc(f.keyA)" :disabled="!timer" class="w-20 h-20 text-4xl bg-green-600 text-white rounded-xl">+</button>
 </div>
 
 <div class="text-5xl font-bold">
@@ -127,8 +126,8 @@ class="bg-yellow-200 text-yellow-900 p-4 rounded-xl font-semibold text-center">
 
 <div>
 <div class="text-lg font-semibold mb-2" x-text="f.teamB"></div>
-<button @click="dec(f.keyB)" :disabled="timeLeft===0" class="w-20 h-20 text-4xl bg-red-500 text-white rounded-xl">−</button>
-<button @click="inc(f.keyB)" :disabled="timeLeft===0" class="w-20 h-20 text-4xl bg-green-600 text-white rounded-xl">+</button>
+<button @click="dec(f.keyB)" :disabled="!timer" class="w-20 h-20 text-4xl bg-red-500 text-white rounded-xl">−</button>
+<button @click="inc(f.keyB)" :disabled="!timer" class="w-20 h-20 text-4xl bg-green-600 text-white rounded-xl">+</button>
 </div>
 
 </div>
@@ -251,12 +250,12 @@ this.resetTimer()
 },
 
 inc(k){
-if(this.timeLeft===0)return
+if(!this.timer) return
 this.scores[k]++
 },
 
 dec(k){
-if(this.timeLeft===0)return
+if(!this.timer) return
 if(this.scores[k]>0)this.scores[k]--
 },
 
